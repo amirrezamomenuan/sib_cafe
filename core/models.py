@@ -3,9 +3,15 @@ from django.utils.translation import ugettext_lazy as _
 
 
 class Food(models.Model):
+
+    class foodCategories(models.TextChoices):
+        BREAKFAST = "B", _('breakfast')
+        LUNCH = "L", _('lunch')
+        APPETIZER = "A", _('appetizer')
+
     name = models.CharField(verbose_name= _("name"), max_length =50)
     description = models.TextField(verbose_name=_('descriptions'), null=True, blank= True, max_length=300)
-    category = models.CharField(_('category'), max_length=1)
+    category = models.CharField(_('category'), max_length=1, choices=foodCategories.choices)
     image = models.ImageField(verbose_name=_('image'), upload_to ='/uploads/food_images', default='/uploads/food_images/default.jpg')
     creation_time = models.DateTimeField(auto_now_add=True)
     modification_time = models.DateTimeField(auto_now=True)
