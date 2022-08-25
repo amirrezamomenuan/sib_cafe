@@ -15,3 +15,13 @@ class Food(models.Model):
         verbose_name = _("food")
         verbose_name_plural = _('foods')
         ordering = ["-creation_time", 'price']
+    
+    @property
+    def rate(self):
+        return 5 #TODO: change this to a function that reads data from redis and returns it
+    
+
+    @rate.setter
+    def rate(self, rate:float) -> None:
+        pass #TODO: change this to a function that updates new data to redis
+    
