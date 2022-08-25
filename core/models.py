@@ -20,8 +20,6 @@ class Food(models.Model):
     def rate(self):
         return 5 #TODO: change this to a function that reads data from redis and returns it
     
-
     @rate.setter
     def rate(self, rate:float) -> None:
         pass #TODO: change this to a function that updates new data to redis
-    
