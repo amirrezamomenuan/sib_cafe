@@ -29,3 +29,6 @@ class Food(models.Model):
     @rate.setter
     def rate(self, rate:float) -> None:
         pass #TODO: change this to a function that updates new data to redis
+
+    def __str__(self) -> str:
+        return f"{self.category} : {self.name}"
