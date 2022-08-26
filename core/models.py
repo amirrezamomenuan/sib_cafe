@@ -38,6 +38,10 @@ class FoodItem(models.Model):
     food = models.ForeignKey(to=Food, on_delete=models.PROTECT, related_name="food_items")
     amount = models.PositiveIntegerField(verbose_name=_("amount"))
     price = models.PositiveIntegerField(verbose_name=_("price"), editable=False)
+    creation_time = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-creation_time']
 
     def __str__(self) -> str:
         return f"{self.food.name}: {self.amount}"
