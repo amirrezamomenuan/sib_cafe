@@ -67,6 +67,13 @@ class FoodTests(TestCase):
         foods = Food.objects.all()
         self.assertEqual(foods.first().name, 'english breakfast')
         self.assertEqual(foods.last().name, 'gheymeh')
+    
+    def test_string_representation(self):
+        gheymeh = Food.objects.get(name="gheymeh")
+        cesar_salad = Food.objects.get(name= 'cesar salad')
+        self.assertEqual("L : gheymeh", f"{gheymeh.category} : {gheymeh.name}")
+        self.assertEqual("A : cesar salad", f"{cesar_salad.category} : {cesar_salad.name}")
+        
 
 
 class TestFoodItem(TestCase):
