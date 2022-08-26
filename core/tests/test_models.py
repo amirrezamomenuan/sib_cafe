@@ -1,5 +1,5 @@
 from django.test import TestCase
-from core.models import Food
+from core.models import Food, FoodItem
 
 class FoodTests(TestCase):
     def setUp(self) -> None:
@@ -67,3 +67,24 @@ class FoodTests(TestCase):
         foods = Food.objects.all()
         self.assertEqual(foods.first().name, 'english breakfast')
         self.assertEqual(foods.last().name, 'gheymeh')
+
+
+class TestFoodItem(TestCase):
+    def setUp(self) -> None:
+        return super().setUp()
+    
+    def test_amount(self):
+        pass
+
+    def test_price(self):
+        pass
+
+    def test_food_connection(self):
+        pass
+
+    def test_food_can_be_ordered(self):
+        pass
+
+    def test_string_representation(self):
+        pass
+    
