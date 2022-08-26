@@ -32,3 +32,12 @@ class Food(models.Model):
 
     def __str__(self) -> str:
         return f"{self.category} : {self.name}"
+
+
+class FoodItem(models.Model):
+    food = models.ForeignKey(to=Food, on_delete=models.PROTECT, related_name="food_items")
+    amount = models.PositiveIntegerField(verbose_name=_("amount"))
+    price = models.PositiveIntegerField(verbose_name=_("price"), editable=False)
+
+    def __str__(self) -> str:
+        return f"{self.food.name}: {self.amount}"
