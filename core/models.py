@@ -36,12 +36,19 @@ class Food(models.Model):
 
 class FoodItem(models.Model):
     food = models.ForeignKey(to=Food, on_delete=models.PROTECT, related_name="food_items")
-    amount = models.PositiveIntegerField(verbose_name=_("amount"))
-    price = models.PositiveIntegerField(verbose_name=_("price"), editable=False)
+    amount = models.PositiveIntegerField(verbose_name=_("amount"), null=True)
+    price = models.PositiveIntegerField(verbose_name=_("price"))
     creation_time = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(verbose_name=_('is_active'), default= True)
     
     class Meta:
         ordering = ['-creation_time']
 
+    @property
+    def can_be_ordered(self) -> bool:
+        if self.amount is not None:
+            return self.amount > 0
+        return True
+
     def __str__(self) -> str:
-        return f"{self.food.name}: {self.amount}"
+        return f"{self.food.name}: {self.price}"
