@@ -94,6 +94,16 @@ class TestFoodItem(TestCase):
             name = 'soda',
             category = Food.foodCategories.APPETIZER,
         )
+        souffle = Food.objects.create(
+            name = 'souffle',
+            description = "luxury dish for employee of month",
+            category = Food.foodCategories.BREAKFAST,
+        )
+        FoodItem.objects.create(
+            food= souffle,
+            price= 200000,
+            amount= 10,
+        )
         FoodItem.objects.create(
             food= koobideh,
             price= 1000000,
@@ -114,13 +124,16 @@ class TestFoodItem(TestCase):
             price= 90000,
             amount= 0,
         )
+        FoodItem.objects.create(
+            food= souffle,
+            price= 350000,
+            amount= 15,
+        )
 
         self.fries = FoodItem.objects.get(food__name = 'fries')
         self.soda = FoodItem.objects.get(food__name = 'soda')
-        try:
-            self.koobideh = FoodItem.objects.get(food__name = 'koobideh kabaab')
-        except MultipleObjectsReturned:
-            self.koobideh = FoodItem.objects.filter(food__name = 'koobideh kabaab').first()
+        self.koobideh = FoodItem.objects.get(food__name = 'koobideh kabaab')
+        self.souffle = FoodItem.objects.get(food__name = 'souffle')
     
     def test_amount(self):
         self.assertEqual(self.fries.amount, 30)
@@ -131,6 +144,7 @@ class TestFoodItem(TestCase):
         # and deactivate all the previous fooditem objects without deleting them
         self.assertEqual(self.fries.price, 120000)
         self.assertEqual(self.koobideh.price, 1250000)
+        self.assertEqual(self.souffle.price, 350000)
 
     def test_food_connection(self):
         koobideh = Food.objects.get(name = 'koobideh kabaab')
