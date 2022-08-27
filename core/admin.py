@@ -9,4 +9,5 @@ class FoodAdmin(admin.ModelAdmin):
 
 @admin.register(FoodItem)
 class FoodItemAdmin(admin.ModelAdmin):
-    pass
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(is_active = True)
