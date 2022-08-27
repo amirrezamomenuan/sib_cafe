@@ -2,6 +2,15 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 
+class FoodItemManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_active = True)
+    
+    def create(self, **kwargs):
+        super().filter(food = kwargs.get("food")).update(is_active = False)
+        return super().create(**kwargs)
+
+
 class Food(models.Model):
 
     class foodCategories(models.TextChoices):
@@ -40,6 +49,7 @@ class FoodItem(models.Model):
     price = models.PositiveIntegerField(verbose_name=_("price"))
     creation_time = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(verbose_name=_('is_active'), default= True)
+    objects = FoodItemManager()
     
     class Meta:
         ordering = ['-creation_time']
