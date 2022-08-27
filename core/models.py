@@ -49,6 +49,11 @@ class FoodItem(models.Model):
         if self.amount is not None:
             return self.amount > 0
         return True
+    
+    def save(self, *args, **kwargs) -> None:
+        # maybe replace self.__class__ with FoodItem
+        self.__class__.objects.filter(food = self.food).update(is_active = False)
+        return super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return f"{self.food.name}: {self.price}"
