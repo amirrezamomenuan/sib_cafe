@@ -71,7 +71,6 @@ class OrderItem(models.Model):
         ADMIN = 0, _("admin")
         USER = 1, _('user')
 
-
     food_item = models.ForeignKey(to= FoodItem, on_delete=models.PROTECT, related_name="food_orders")
     user = models.ForeignKey(to='accounts.user', on_delete=models.PROTECT, related_name='user_orders')
     time_submited = models.DateTimeField(verbose_name=_("submition time"), auto_now_add=True)
@@ -79,14 +78,27 @@ class OrderItem(models.Model):
     state = models.SmallIntegerField(verbose_name=_("state"), choices=stateChoices.choices, default=stateChoices.SUBMITED.value)
     last_modifier = models.SmallIntegerField(verbose_name=_("last modifier"), choices=modifierChoices.choices)
 
-    def can_be_canceled(self, user) -> bool:
-        pass
+    def can_be_canceled(self) -> bool:
+        if self.state != self.stateChoices.SUBMITED.value:
+            return False
+        # TODO: check time and return True if order can be canceled
 
-    def accept_order(self, user) -> None:
-        pass
-
-    def serve_order(self, user) -> None:
-        pass
+    def can_be_served(self) -> bool:
+        return True
+    
+    def can_be_accepted(self) -> bool:
+        return True
 
     def cancel_order(self, user) -> None:
+        if user.is_staff:
+            self.last_modifier = self.modifierChoices.ADMIN.value
+        else:
+            self.last_modifier = self.modifierChoices.USER.value
+        self.state = self.stateChoices.CANCELED.value
+        self.save()
+    
+    def accept_order(self) -> None:
+        pass
+    
+    def serve_order(self) -> None:
         pass
