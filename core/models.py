@@ -1,3 +1,4 @@
+from tabnanny import verbose
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -35,11 +36,20 @@ class Food(models.Model):
 
 
 class FoodItem(models.Model):
+
+    class dayChoices(models.IntegerChoices):
+        SATURDAY = 0 , _('saturday')
+        SUNDAY = 1, _('sunday')
+        MONDAY = 2, _('monday')
+        TUESDAY = 3, _('sunday')
+        WEDNESDAY = 4, _('wednesday')
+        EVERY_DAY = -1, _("everyday")
+
     food = models.ForeignKey(to=Food, on_delete=models.PROTECT, related_name="food_items")
     amount = models.PositiveIntegerField(verbose_name=_("amount"), null=True)
     price = models.PositiveIntegerField(verbose_name=_("price"))
     creation_time = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(verbose_name=_('is_active'), default= True)
+    weekday = models.SmallIntegerField(verbose_name= _("weekday"), choices= dayChoices.choices, default= dayChoices.EVERY_DAY.value)
     
     class Meta:
         ordering = ['-creation_time']
@@ -49,11 +59,9 @@ class FoodItem(models.Model):
         if self.amount is not None:
             return self.amount > 0
         return True
-    
-    def save(self, *args, **kwargs) -> None:
-        # maybe replace self.__class__ with FoodItem
-        self.__class__.objects.filter(food = self.food).update(is_active = False)
-        return super().save(*args, **kwargs)
+
+    def show_menu(self, weekday):
+        pass
 
     def __str__(self) -> str:
         return f"{self.food.name}: {self.price}"
@@ -78,16 +86,19 @@ class OrderItem(models.Model):
     state = models.SmallIntegerField(verbose_name=_("state"), choices=stateChoices.choices, default=stateChoices.SUBMITED.value)
     last_modifier = models.SmallIntegerField(verbose_name=_("last modifier"), choices=modifierChoices.choices)
 
+    def can_be_ordered(self) -> bool:
+        pass #change after redis is added to project
+
     def can_be_canceled(self) -> bool:
         if self.state != self.stateChoices.SUBMITED.value:
             return False
         # TODO: check time and return True if order can be canceled
 
     def can_be_served(self) -> bool:
-        return True
-    
+        pass
+
     def can_be_accepted(self) -> bool:
-        return True
+        pass
 
     def cancel_order(self, user) -> None:
         if user.is_staff:
