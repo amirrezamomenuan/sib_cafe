@@ -57,3 +57,36 @@ class FoodItem(models.Model):
 
     def __str__(self) -> str:
         return f"{self.food.name}: {self.price}"
+
+
+class OrderItem(models.Model):
+
+    class stateChoices(models.IntegerChoices):
+        SUBMITED = 0, _('submited')
+        ACCEPTED = 1, _('accepted')
+        SERVED = 2, _('served')
+        CANCELED = -1, _('canceled')
+    
+    class modifierChoices(models.IntegerChoices):
+        ADMIN = 0, _("admin")
+        USER = 1, _('user')
+
+
+    food_item = models.ForeignKey(to= FoodItem, on_delete=models.PROTECT, related_name="food_orders")
+    user = models.ForeignKey(to='accounts.user', on_delete=models.PROTECT, related_name='user_orders')
+    time_submited = models.DateTimeField(verbose_name=_("submition time"), auto_now_add=True)
+    last_modified = models.DateTimeField(verbose_name=_("modification time"), auto_now=True)
+    state = models.SmallIntegerField(verbose_name=_("state"), choices=stateChoices.choices, default=stateChoices.SUBMITED.value)
+    last_modifier = models.SmallIntegerField(verbose_name=_("last modifier"), choices=modifierChoices.choices)
+
+    def can_be_canceled(self, user) -> bool:
+        pass
+
+    def accept_order(self, user) -> None:
+        pass
+
+    def serve_order(self, user) -> None:
+        pass
+
+    def cancel_order(self, user) -> None:
+        pass
