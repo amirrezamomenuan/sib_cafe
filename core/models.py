@@ -113,3 +113,24 @@ class OrderItem(models.Model):
     
     def serve_order(self) -> None:
         pass
+
+class FoodRate(models.Model):
+    
+    class rateChoices(models.IntegerChoices):
+        VERY_BAD = 1, _('very bad')
+        BAD = 2, _('bad')
+        AVERAGE = 3, _('average')
+        GOOD = 4, _('good')
+        VERY_GOOD = 5, _('very good')
+    
+    user = models.ForeignKey(to = 'accounts.user', null=True, on_delete= models.SET_NULL)
+    food = models.ForeignKey(to= Food, on_delete= models.CASCADE)
+    date_rated = models.DateField(verbose_name=_("date rated"), auto_now_add=True)
+    rate = models.PositiveSmallIntegerField(verbose_name=_("rate"), choices=rateChoices.choices)
+
+    class Meta:
+        ordering = ['-date_rated',]
+        unique_together = ['user', 'food', 'date_rated', ]
+        verbose_name = _("rate")
+        verbose_name_plural = _('rates')
+      
