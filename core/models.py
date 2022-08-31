@@ -1,6 +1,7 @@
-from tabnanny import verbose
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth import get_user_model
+from django.conf import settings
 
 
 class Food(models.Model):
@@ -46,7 +47,7 @@ class FoodItem(models.Model):
         EVERY_DAY = -1, _("everyday")
 
     food = models.ForeignKey(to=Food, on_delete=models.PROTECT, related_name="food_items")
-    amount = models.PositiveIntegerField(verbose_name=_("amount"), null=True)
+    amount = models.PositiveIntegerField(verbose_name=_("amount"), null=True, blank=True)
     price = models.PositiveIntegerField(verbose_name=_("price"))
     creation_time = models.DateTimeField(auto_now_add=True)
     weekday = models.SmallIntegerField(verbose_name= _("weekday"), choices= dayChoices.choices, default= dayChoices.EVERY_DAY.value)
@@ -80,7 +81,7 @@ class OrderItem(models.Model):
         USER = 1, _('user')
 
     food_item = models.ForeignKey(to= FoodItem, on_delete=models.PROTECT, related_name="food_orders")
-    user = models.ForeignKey(to='accounts.user', on_delete=models.PROTECT, related_name='user_orders')
+    user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='user_orders')
     time_submited = models.DateTimeField(verbose_name=_("submition time"), auto_now_add=True)
     last_modified = models.DateTimeField(verbose_name=_("modification time"), auto_now=True)
     state = models.SmallIntegerField(verbose_name=_("state"), choices=stateChoices.choices, default=stateChoices.SUBMITED.value)
@@ -123,7 +124,7 @@ class FoodRate(models.Model):
         GOOD = 4, _('good')
         VERY_GOOD = 5, _('very good')
     
-    user = models.ForeignKey(to = 'accounts.user', null=True, on_delete= models.SET_NULL)
+    user = models.ForeignKey(to = settings.AUTH_USER_MODEL, null=True, on_delete= models.SET_NULL)
     food = models.ForeignKey(to= Food, on_delete= models.CASCADE)
     date_rated = models.DateField(verbose_name=_("date rated"), auto_now_add=True)
     rate = models.PositiveSmallIntegerField(verbose_name=_("rate"), choices=rateChoices.choices)
@@ -132,5 +133,5 @@ class FoodRate(models.Model):
         ordering = ['-date_rated',]
         unique_together = ['user', 'food', 'date_rated', ]
         verbose_name = _("rate")
-        verbose_name_plural = _('rates')
+        verbose_name_plural = _('food rates')
       
