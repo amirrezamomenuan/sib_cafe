@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth import get_user_model
 from django.conf import settings
 
 
@@ -27,7 +26,7 @@ class Food(models.Model):
     @property
     def rate(self):
         return 5 #TODO: change this to a function that reads data from redis and returns it
-    
+       
     @rate.setter
     def rate(self) -> None:
         pass #TODO: change this to a function that updates new data to redis
