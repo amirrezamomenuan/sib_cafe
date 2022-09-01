@@ -113,6 +113,10 @@ class OrderItem(models.Model):
     
     def serve_order(self) -> None:
         pass
+    
+
+    def __str__(self) -> str:
+        return f"{self.food_item.food.name}"
 
 class FoodRate(models.Model):
     
