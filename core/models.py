@@ -41,7 +41,7 @@ class FoodItem(models.Model):
         SATURDAY = 0 , _('saturday')
         SUNDAY = 1, _('sunday')
         MONDAY = 2, _('monday')
-        TUESDAY = 3, _('sunday')
+        TUESDAY = 3, _('tuesday')
         WEDNESDAY = 4, _('wednesday')
         EVERY_DAY = -1, _("everyday")
 
