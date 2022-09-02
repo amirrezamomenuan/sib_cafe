@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
+from core.managers import FoodItemManager
 
 class Food(models.Model):
 
@@ -50,6 +51,7 @@ class FoodItem(models.Model):
     price = models.PositiveIntegerField(verbose_name=_("price"))
     creation_time = models.DateTimeField(auto_now_add=True)
     weekday = models.SmallIntegerField(verbose_name= _("weekday"), choices= dayChoices.choices, default= dayChoices.EVERY_DAY.value)
+    objects = FoodItemManager()
     
     class Meta:
         ordering = ['-creation_time']
