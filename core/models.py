@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
-from core.managers import FoodItemManager
+from core.managers import FoodItemManager, FoodManager
 
 class Food(models.Model):
 
@@ -17,6 +17,7 @@ class Food(models.Model):
     image = models.ImageField(verbose_name=_('image'), upload_to ='uploads/food_images', default='uploads/food_images/default.jpg')
     creation_time = models.DateTimeField(auto_now_add=True)
     modification_time = models.DateTimeField(auto_now=True)
+    objects = FoodManager()
 
     class Meta:
         db_table = "core_food"
