@@ -25,7 +25,8 @@ class FoodListView(APIView):
     permission_classes = [IsAuthenticated,]
 
     def get(self, request):
-        foods = Food.objects.get_page(int(request.GET.get("page", 1)))
+        page = int(request.GET.get("page", 1))
+        foods = Food.objects.get_page(page)
         serialized_data = self.serializer_class(foods, many = True)
         return Response(data = serialized_data.data, status=status.HTTP_200_OK)    
 
@@ -41,35 +42,20 @@ class MenuView(APIView):
             return Response(data= {'days' : [0, 1, 2, 3, 4]}, status = status.HTTP_200_OK)
 
         page = int(request.GET.get("page", 1))
-        food_items = FoodItem.objects.show_menu(weekday)
-        food_items = FoodItem.objects.get_page(food_items, page)
+        food_items = FoodItem.objects.show_menu(weekday).get_page(page)
         serialized_data = self.serializer_class(food_items, many= True)
         return Response(data= serialized_data.data, status = status.HTTP_200_OK)
 
 
 # TODO: add pagination
-class OrderView(APIView):
+class ShowOrdersView(APIView):
     serializer_class = OrderItemSerializer
     permission_classes = [IsAuthenticated, ]
 
     def get(self, request):
-        order_id = request.GET.get('order_id')
-        if order_id is not None:
-            order_item = get_object_or_404(OrderItem, pk = order_id, user = request.user)
-            serialized_data = self.serializer_class(order_item)
-        else:
-            order_items = OrderItem.objects.filter(user = request.user)
-            serialized_data = self.serializer_class(order_items, many= True)
+        order_items = OrderItem.objects.filter(user = request.user)
+        serialized_data = self.serializer_class(order_items, many= True)
         return Response(data=serialized_data.data, status=status.HTTP_200_OK)
-
-
-    # def post(self, request):
-    #     serializer_data = self.serializer_class(data=request.data)
-    #     if serializer_data.is_valid(raise_exception=True):
-    #         serializer_data.save()
-
-    # def delete(self, request):
-    #     pass
 
 
 

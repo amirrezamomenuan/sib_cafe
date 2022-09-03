@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
-from core.managers import FoodItemManager, FoodManager
+from core.managers import FoodItemManager, FoodManager, OrderItemManager
 
 class Food(models.Model):
 
@@ -88,6 +88,7 @@ class OrderItem(models.Model):
     last_modified = models.DateTimeField(verbose_name=_("modification time"), auto_now=True)
     state = models.SmallIntegerField(verbose_name=_("state"), choices=stateChoices.choices, default=stateChoices.SUBMITED.value)
     last_modifier = models.SmallIntegerField(verbose_name=_("last modifier"), choices=modifierChoices.choices)
+    objects = OrderItemManager()
 
     def can_be_ordered(self) -> bool:
         pass #change after redis is added to project
