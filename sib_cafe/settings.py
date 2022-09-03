@@ -97,3 +97,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.User'
 
 FOOD_PAGE_SIZE = 10
+MENU_PAGE_SIZE = 10

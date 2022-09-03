@@ -34,10 +34,16 @@ class MenuView(APIView):
     serializer_class = FoodItemserializer
     permission_classes = [IsAuthenticated, ]
 
-    def get(self, request, day):
-        food_items = FoodItem.objects.show_menu(day)
+    def get(self, request):
+        weekday = request.GET.get('weekday')
+        if weekday is None:
+            # change this to limit passed week days
+            return Response(data= {'days' : [0, 1, 2, 3, 4]}, status = status.HTTP_200_OK)
+
+        page = int(request.GET.get("page", 1))
+        food_items = FoodItem.objects.show_menu(weekday)
+        food_items = FoodItem.objects.get_page(food_items, page)
         serialized_data = self.serializer_class(food_items, many= True)
-        # print(len(connection.queries))
         return Response(data= serialized_data.data, status = status.HTTP_200_OK)
 
 

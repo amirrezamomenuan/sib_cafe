@@ -50,7 +50,7 @@ class FoodItem(models.Model):
     food = models.ForeignKey(to=Food, on_delete=models.PROTECT, related_name="food_items")
     amount = models.PositiveIntegerField(verbose_name=_("amount"), null=True, blank=True)
     price = models.PositiveIntegerField(verbose_name=_("price"))
-    creation_time = models.DateTimeField(auto_now_add=True)
+    creation_time = models.DateField(null=True, blank=True)
     weekday = models.SmallIntegerField(verbose_name= _("weekday"), choices= dayChoices.choices, default= dayChoices.EVERY_DAY.value)
     objects = FoodItemManager()
     
