@@ -1,3 +1,17 @@
-from django.shortcuts import render
+from rest_framework.views import APIView
 
-# Create your views here.
+
+
+class SignupView(APIView):
+    def post(self, request):
+        pass
+
+
+class LoginView(APIView):
+    def post(self, request):
+        pass
+
+
+class RefreshTokenView(APIView):
+    def post(self, request):
+        pass
