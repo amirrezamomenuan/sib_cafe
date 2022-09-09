@@ -20,13 +20,8 @@ class SignupView(APIView):
             # TODO: replace with redirect
             token_serializer_data = TokenObtainPairSerializer(data = serializer_data.validated_data)
             if token_serializer_data.is_valid():
-                print(token_serializer_data.validated_data)
                 return Response(data = token_serializer_data.validated_data, status=status.HTTP_200_OK)
 
-        print(serializer_data.errors)
-        print(type(serializer_data.error_messages))
-        print(serializer_data.validated_data)
-        print("\n\n\n")
         return Response(data= serializer_data.errors, status= status.HTTP_406_NOT_ACCEPTABLE)
 
 
@@ -48,6 +43,6 @@ class LogoutView(APIView):
             token = RefreshToken(refresh_token)
             token.blacklist()
             return Response(status=status.HTTP_205_RESET_CONTENT)
-            
+
         except:
             return Response(status=status.HTTP_400_BAD_REQUEST)
