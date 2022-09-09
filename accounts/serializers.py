@@ -50,4 +50,3 @@ class SignupSerializer(serializers.Serializer):
         user.set_password(validated_data.get('password'))
         user.save()
         return user
-        
