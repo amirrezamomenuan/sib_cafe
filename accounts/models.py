@@ -6,4 +6,4 @@ class User(AbstractUser):
         return 1000
     
     def __repr__(self) -> str:
-        return f"{self.username} heeeee"
+        return f"{self.first_name} {self.last_name}"
