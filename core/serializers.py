@@ -10,10 +10,17 @@ class FoodSerializer(serializers.ModelSerializer):
 class FoodListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Food
-        fields = ['id', 'name', "image",]
+        fields = ['name', "image",]
 
 
 class FoodItemserializer(serializers.ModelSerializer):
+    food = FoodListSerializer()
+    class Meta:
+        model = FoodItem
+        fields = ['id', 'amount', 'price', 'food']
+
+
+class FoodItemDetailSerializer(serializers.ModelSerializer):
     food = FoodSerializer()
     class Meta:
         model = FoodItem
@@ -26,3 +33,4 @@ class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
         fields = ['food_item', 'time_submited', 'last_modified', 'state', ]
+        

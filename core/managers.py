@@ -1,35 +1,85 @@
-# from calendar import weekday as _weekday
-from datetime import date, timedelta
+from datetime import date
 from django.db.models import Manager, Q, QuerySet
 from django.conf import settings
 
 
 class PaginatorQuerySet(QuerySet):
-    page_size = settings.DEFAULT_PAGE_SIZE
+    def get_page(self, **kwargs) -> list:
+        offset = kwargs.get('offset')
+        limit = kwargs.get('limit')
+        offset = 0 if offset is None else int(offset[0])
+        limit = limit if limit is None else int(limit[0]) + offset
 
-    def get_page(self, page: int):
-        return self[(page - 1) * self.page_size : page * self.page_size]
+        return self[offset: limit]
 
 
 class FoodItemManager(Manager):
-    page_size = settings.MENU_PAGE_SIZE
+
+    @staticmethod
+    def get_weekday() -> int:
+        return (date.weekday(date.today()) + 2) % 7
+    
+    @staticmethod
+    def proccess_sort_parameter(sort_by):
+        if sort_by is not None:
+            sort_by = sort_by[0]
+            if sort_by in ('price', '-price', 'rate', '-rate'):
+                return sort_by
 
     def get_queryset(self):
         return PaginatorQuerySet(self.model)
 
-    def show_menu(self, week_day: int):
-        # TODO: update to ASYNC after adding redis to the project
-        # since fitem.can_be_ordered will triger a redis call
-        return self.filter(id__in = {fitem.id for fitem in self.filter(Q(weekday= week_day) | Q(weekday = -1)) if fitem.can_be_ordered})
+    def show_menu(self, **kwargs):
+        sort_by = kwargs.get('sort_by')
+        week_day = kwargs.get('weekday')
+        if week_day:
+            week_day = int(week_day[0])
+        else:
+            week_day = int(self.get_weekday())
+        
+        if week_day in (5, 6):
+            return self.none()
 
-    # def get_page(self, queryset, page: int):
-    #     return queryset[(page - 1) * self.page_size : page * self.page_size]
+        # TODO: check if food can be ordered
+        query_set = self.filter(Q(weekday= week_day) | Q(weekday = -1))
+        sort_by = self.proccess_sort_parameter(sort_by)
+        if sort_by:
+            return query_set.order_by(sort_by)
+        return query_set
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class FoodManager(Manager):
     page_size = settings.FOOD_PAGE_SIZE
 
     def get_queryset(self):
         return PaginatorQuerySet(self.model)
+
+    # def get_page(self, page: int):
+    #     return self.all()[(page - 1) * self.page_size : page * self.page_size]
 
 
 class OrderItemManager(Manager):
@@ -41,7 +91,7 @@ class OrderItemManager(Manager):
             raise AttributeError
         return getattr(self.get_queryset(), name, *args) 
     
-    def get_user_order(self, user):
+    def get_user_orders(self, user):
         return self.filter(user = user)
 
 
