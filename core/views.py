@@ -46,10 +46,10 @@ class CreateOrderView(APIView):
         # order_date = date(data.initial_data.get('order_date'))
 
         serialized_data.is_valid()
-
-        if food_item.can_be_ordered(request.user, order_date=serialized_data.validated_data.get('order_date')):
+        order_date = serialized_data.validated_data.get('order_date')
+        if food_item.can_be_ordered(request.user, order_date=order_date):
             print('it can be ordered')
-            new_order = OrderItem(food_item = food_item, user=request.user, last_modifier = 0, order_date = serialized_data.validated_data.get('order_date'))
+            new_order = OrderItem(food_item = food_item, user=request.user, last_modifier = 0, order_date = order_date)
             new_order.save()
             return Response(status=status.HTTP_201_CREATED)
         else:

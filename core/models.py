@@ -65,7 +65,8 @@ class FoodItem(models.Model):
         if self.weekday == -1:
             print('daily food can be ordered')
             return True
-        return self.weekday == (order_date.weekday() - 2) % 7
+        print(f"\nweekday for order_date is {(order_date.weekday() + 2) % 7}, self.weekday is {self.weekday}")
+        return self.weekday == (order_date.weekday() + 2) % 7
 
     def __user_has_ordered_limited_food(self, user, food_item_id, order_date:date):
         print("\nchecking if user has ordered this food\n")
@@ -105,7 +106,9 @@ class FoodItem(models.Model):
             return datetime.now().hour < settings.LUNCH_TIME_LIMIT
 
     def __order_time_is_over(self, order_date:date):
-        date_difference = (date.today() - order_date).days
+        date_difference = (order_date - date.today()).days
+        print(f"\ndate difference is : {date_difference}\n")
+        print('order date for current request is: ', order_date, 'todays date is : ', date.today())
 
         if self.food.category == Food.foodCategories.BREAKFAST.value:
             if date_difference == 0:
@@ -139,13 +142,15 @@ class FoodItem(models.Model):
         print("checking redis in here")
         s_time = time()
         try:
-            ordered_food_count = int(settings.REDIS_CONNECTION.get(f'{self.pk}').encode('utf-8'))
+            ordered_food_count = settings.REDIS_CONNECTION.get(f'{self.pk}')
             if ordered_food_count is None:
                 print('no data is available in redis for key: ', self.pk)
-                raise
+                raise Exception('key for order_item.pk is not provided')
+            ordered_food_count = int(ordered_food_count.decode('utf-8'))
             print('redis is working fine and the food_count is: ', ordered_food_count)
-        except:
+        except Exception as e:
             print("\n hitted 11111111  first 111111111 exception in redis\n")
+            print(f'first error message is {e}')
             today = date.today()
             ordered_food_count = self.food_orders.filter(order_date=today).count()
             try:
@@ -158,7 +163,9 @@ class FoodItem(models.Model):
         print('checking redis completed')
         print(self.amount, " -------- ", ordered_food_count)
         print(f'\n took {time() - s_time} to complete redis query\n')
-        return self.amount == ordered_food_count
+        if self.amount == ordered_food_count:
+            print('======food is sold out======')
+        return self.amount <= ordered_food_count
     
     def can_be_ordered(self, user, order_date:date) -> bool:
         user_can_order = self.__user_can_order_item(user, self.pk, order_date)
