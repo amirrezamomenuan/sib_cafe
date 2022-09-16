@@ -124,7 +124,8 @@ class TestMenuList(APITestCase):
         query_params = '?weekday=6'
         url = reverse('menu') + query_params
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(len(response.json()), 0)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_menu_list_with_limit_offset(self):
         query_params = '?weekday=4&limit=5&offset=6'
@@ -133,11 +134,11 @@ class TestMenuList(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()), 4)
 
-    def test_menu_list_sort_by_highest_price_limit_offset(self):
-        query_params = '?weekday=4&limit=10&offset=2&sort_by=-price'
+    def test_menu_list_order_by_highest_price_limit_offset(self):
+        query_params = '?weekday=4&limit=10&offset=2&order_by=-price'
         url = reverse('menu') + query_params
         response = self.client.get(url)
-        json_response = response.json()
+        json_response = response.json().get('results')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json_response[0].get('price'), 20000)
@@ -149,19 +150,19 @@ class TestMenuList(APITestCase):
         self.assertEqual(json_response[6].get('price'), 10000)
         self.assertEqual(json_response[7].get('price'), 9000)
 
-    def test_menu_list_sort_by_lowest_price_limit_offset(self):
-        query_params = '?weekday=4&limit=2&offset=7&sort_by=price'
+    def test_menu_list_order_by_lowest_price_limit_offset(self):
+        query_params = '?weekday=4&limit=2&offset=7&order_by=price'
         url = reverse('menu') + query_params
         response = self.client.get(url)
-        json_response = response.json()
+        json_response = response.json().get('results')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(json_response[0].get('price'), 20000)
         self.assertEqual(json_response[1].get('price'), 100000)
 
-    def test_menu_list_sort_by_highest_rate_limit_offset(self):
+    def test_menu_list_order_by_highest_rate_limit_offset(self):
         pass
 
-    def test_menu_list_sort_by_highest_rate_without_limit_offset(self):
+    def test_menu_list_order_by_highest_rate_without_limit_offset(self):
         pass
 
     def test_menu_list_with_weekday_that_only_has_daily_menu(self):

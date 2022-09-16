@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 
-from core.managers import FoodItemManager, FoodManager, OrderItemManager
+from core.managers import FoodManager, OrderItemManager
 
 class Food(models.Model):
 
@@ -56,7 +56,6 @@ class FoodItem(models.Model):
     price = models.PositiveIntegerField(verbose_name=_("price"))
     creation_time = models.DateField(null=True, blank=True)
     weekday = models.SmallIntegerField(verbose_name= _("weekday"), choices= dayChoices.choices, default= dayChoices.EVERY_DAY.value)
-    objects = FoodItemManager()
     
     class Meta:
         ordering = ['-creation_time']

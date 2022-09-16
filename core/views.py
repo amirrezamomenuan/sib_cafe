@@ -1,28 +1,42 @@
-from datetime import date, datetime
+from datetime import date
 from django.shortcuts import get_object_or_404
 from django.db import connection
 
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import Q
+
 
 from core.serializers import CreateOrderSerializer, FoodItemDetailSerializer, FoodItemserializer, FoodListSerializer, FoodSerializer, OrderItemSerializer
 from core.models import Food, FoodItem, OrderItem
 
 
 #finished menu
-class MenuView(APIView):
+class MenuView(ListAPIView):
     serializer_class = FoodItemserializer
     permission_classes = [AllowAny, ]
+    pagination_class = LimitOffsetPagination
+    queryset = FoodItem.objects.all()
 
-    def get(self, request):
-        food_items = FoodItem.objects.show_menu(**request.query_params).get_page(**request.query_params)
-        if not food_items.exists():
-            return Response(status= status.HTTP_404_NOT_FOUND)
+    def get_queryset(self):
+        order_parameter = self.request.query_params.get('order_by', '-creation_time')
+        week_day = self.request.query_params.get('weekday')
+        if week_day:
+            week_day = int(week_day[0])
+        else:
+            week_day = (date.weekday(date.today()) + 2) % 7
+        
+        if week_day in (5, 6):
+            return self.queryset.none()
 
-        serialized_data = self.serializer_class(food_items, many= len(food_items) > 1)
-        return Response(data= serialized_data.data, status = status.HTTP_200_OK)
+        # TODO: check if food can be ordered
+        queryset = self.queryset.filter(Q(weekday= week_day) | Q(weekday = -1))
+        return queryset.order_by(order_parameter)
+
 
 # finished menuitem
 class MenuItemView(APIView):

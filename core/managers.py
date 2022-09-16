@@ -48,30 +48,6 @@ class FoodItemManager(Manager):
         return query_set
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class FoodManager(Manager):
     page_size = settings.FOOD_PAGE_SIZE
 
