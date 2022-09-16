@@ -104,9 +104,13 @@ class FoodItem(models.Model):
             return datetime.now().hour < settings.BREAKFAST_TIME_LIMIT
         elif self.food.category == Food.foodCategories.LUNCH.value:
             return datetime.now().hour < settings.LUNCH_TIME_LIMIT
+        return datetime.now().hour < settings.APPETIZER_TIME_LIMIT
 
     def __order_time_is_over(self, order_date:date):
         date_difference = (order_date - date.today()).days
+        if date_difference >= 7:
+            print('order is too far')
+            return True
         print(f"\ndate difference is : {date_difference}\n")
         print('order date for current request is: ', order_date, 'todays date is : ', date.today())
 
@@ -120,6 +124,9 @@ class FoodItem(models.Model):
                 return not self.__check_time_limit()
             elif date_difference > 1:
                 return False
+        else:
+            if date_difference == 0:
+                return not self.__check_time_limit()
         return True
 
     def __user_can_order_limited_food(self, user, food_item_id, order_date):
@@ -135,11 +142,13 @@ class FoodItem(models.Model):
     def __user_can_order_item(self, user, food_item_id, order_date:date) -> bool:
         if self.food.category == Food.foodCategories.APPETIZER.value:
             print("\nordering a breakfast\n")
-            return True    
+            return not self.__order_time_is_over(order_date)   
         return self.__user_can_order_limited_food(user, food_item_id, order_date)
             
     def __food_is_sold_out(self) -> bool:
         print("checking redis in here")
+        if self.amount is None:
+            return False
         s_time = time()
         try:
             ordered_food_count = settings.REDIS_CONNECTION.get(f'{self.pk}')

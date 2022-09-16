@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from django.conf import settings
 
-from core.models import Food, FoodItem, OrderItem
+from core.models import Food, FoodItem
 
 User = get_user_model()
 
@@ -120,7 +120,7 @@ class TestOrderSubmittion(APITestCase):
     @mock.patch('core.models.datetime')
     def test_ordering_an_item_that_does_not_exist_on_menu_for_specific_weekday(self, mock_datetime, mock_date):
         mock_datetime.now.return_value.hour = 14
-        mock_date.today.return_value = date(2022, 9,8)
+        mock_date.today.return_value = date(2022, 9, 8)
         data = {"food_item_id": 5, "order_date": "2022-09-10"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
@@ -129,7 +129,7 @@ class TestOrderSubmittion(APITestCase):
     @mock.patch('core.models.datetime')
     def test_ordering_breakfast_when_already_ordered_for_a_specific_date(self, mock_datetime, mock_date):
         mock_datetime.now.return_value.hour = 7
-        mock_date.today.return_value = date(2022, 9,15)
+        mock_date.today.return_value = date(2022, 9, 15)
 
         data = {"food_item_id": 13, "order_date": "2022-09-15"}
         response = self.client.post(path=self.path, data=data)
@@ -141,7 +141,7 @@ class TestOrderSubmittion(APITestCase):
     @mock.patch('core.models.datetime')
     def test_ordering_lunch_when_already_ordered_for_a_specific_date(self, mock_datetime, mock_date):
         mock_datetime.now.return_value.hour = 14
-        mock_date.today.return_value = date(2022, 9,11)
+        mock_date.today.return_value = date(2022, 9, 11)
 
         data = {"food_item_id": 3, "order_date": "2022-09-13"}
         response = self.client.post(path=self.path, data=data)
@@ -153,7 +153,7 @@ class TestOrderSubmittion(APITestCase):
     @mock.patch('core.models.datetime')
     def test_ordering_breakfast_that_is_sold_out(self, mock_datetime, mock_date):
         mock_datetime.now.return_value.hour = 7
-        mock_date.today.return_value = date(2022, 9,15)
+        mock_date.today.return_value = date(2022, 9, 15)
         settings.REDIS_CONNECTION.set(name='12', value= 15)
     
         data = {"food_item_id": 12, "order_date": "2022-09-15"}
@@ -164,7 +164,7 @@ class TestOrderSubmittion(APITestCase):
     @mock.patch('core.models.datetime')
     def test_ordering_lunch_that_is_sold_out(self, mock_datetime, mock_date):
         mock_datetime.now.return_value.hour = 17
-        mock_date.today.return_value = date(2022, 9,11)
+        mock_date.today.return_value = date(2022, 9, 11)
         settings.REDIS_CONNECTION.set(name='5', value= 10)
 
         data = {"food_item_id": 5, "order_date": "2022-09-12"}
@@ -175,7 +175,7 @@ class TestOrderSubmittion(APITestCase):
     @mock.patch('core.models.datetime')
     def test_ordering_breakfast_after_limited_time(self, mock_datetime, mock_date):
         mock_datetime.now.return_value.hour = 12
-        mock_date.today.return_value = date(2022, 9,12)
+        mock_date.today.return_value = date(2022, 9, 12)
 
         data = {"food_item_id": 13, "order_date": "2022-09-12"}
         response = self.client.post(path=self.path, data=data)
@@ -185,7 +185,7 @@ class TestOrderSubmittion(APITestCase):
     @mock.patch('core.models.datetime')
     def test_ordering_lunch_after_limited_time(self, mock_datetime, mock_date):
         mock_datetime.now.return_value.hour = 19
-        mock_date.today.return_value = date(2022, 9,13)
+        mock_date.today.return_value = date(2022, 9, 13)
 
         data = {"food_item_id": 4, "order_date": "2022-09-14"}
         response = self.client.post(path=self.path, data=data)
@@ -195,7 +195,7 @@ class TestOrderSubmittion(APITestCase):
     @mock.patch('core.models.datetime')
     def test_ordering_lunch_on_same_day(self, mock_datetime, mock_date):
         mock_datetime.now.return_value.hour = 13
-        mock_date.today.return_value = date(2022, 9,14)
+        mock_date.today.return_value = date(2022, 9, 14)
 
         data = {"food_item_id": 4, "order_date": "2022-09-14"}
         response = self.client.post(path=self.path, data=data)
@@ -205,7 +205,7 @@ class TestOrderSubmittion(APITestCase):
     @mock.patch('core.models.datetime')
     def test_ordering_breakfast_for_yesterday_with_correct_time(self, mock_datetime, mock_date):
         mock_datetime.now.return_value.hour = 8
-        mock_date.today.return_value = date(2022, 9,15)
+        mock_date.today.return_value = date(2022, 9, 15)
 
         data = {"food_item_id": 12, "order_date": "2022-09-14"}
         response = self.client.post(path=self.path, data=data)
@@ -213,9 +213,9 @@ class TestOrderSubmittion(APITestCase):
 
     @mock.patch('core.models.date')
     @mock.patch('core.models.datetime')
-    def test_ordering_breakfast_for_yesterday_without_correct_time(self, mock_datetime, mock_date):
+    def test_ordering_breakfast_for_yesterday_with_incorrect_time(self, mock_datetime, mock_date):
         mock_datetime.now.return_value.hour = 13
-        mock_date.today.return_value = date(2022, 9,15)
+        mock_date.today.return_value = date(2022, 9, 15)
 
         data = {"food_item_id": 12, "order_date": "2022-09-14"}
         response = self.client.post(path=self.path, data=data)
@@ -225,7 +225,7 @@ class TestOrderSubmittion(APITestCase):
     @mock.patch('core.models.datetime')
     def test_ordering_lunch_for_yesterday_with_correct_time(self, mock_datetime, mock_date):
         mock_datetime.now.return_value.hour = 13
-        mock_date.today.return_value = date(2022, 9,14)
+        mock_date.today.return_value = date(2022, 9, 14)
 
         data = {"food_item_id": 3, "order_date": "2022-09-13"}
         response = self.client.post(path=self.path, data=data)
@@ -235,29 +235,88 @@ class TestOrderSubmittion(APITestCase):
     @mock.patch('core.models.datetime')
     def test_ordering_lunch_for_yesterday_with_incorrect_time(self, mock_datetime, mock_date):
         mock_datetime.now.return_value.hour = 21
-        mock_date.today.return_value = date(2022, 9,14)
+        mock_date.today.return_value = date(2022, 9, 14)
 
         data = {"food_item_id": 3, "order_date": "2022-09-13"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    # def test_ordering_lunch_for_next_14_days(self):
-    #     pass
+    @mock.patch('core.models.date')
+    @mock.patch('core.models.datetime')
+    def test_ordering_lunch_for_next_7_days(self, mock_datetime, mock_date):
+        mock_datetime.now.return_value.hour = 15
+        mock_date.today.return_value = date(2022, 9, 14)
 
-    # def test_oreding_breakfast_for_next_14_days(self):
-    #     pass
-    
-    # def test_ordering_appetizer_for_yesterday(self):
-    #     pass
+        data = {"food_item_id": 2, "order_date": "2022-09-07"}
+        response = self.client.post(path=self.path, data=data)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    # def test_ordering_appetizer_with_correct_data(self):
-    #     pass
+    @mock.patch('core.models.date')
+    @mock.patch('core.models.datetime')
+    def test_oreding_breakfast_for_next_7_days(self, mock_datetime, mock_date):
+        mock_datetime.now.return_value.hour = 6
+        mock_date.today.return_value = date(2022, 9, 14)
 
-    # def test_ordering_lunch_for_tomorrow_with_correct_data(self):
-    #     pass
+        data = {"food_item_id": 2, "order_date": "2022-09-07"}
+        response = self.client.post(path=self.path, data=data)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
-    # def test_ordering_breakfast_for_tomorrow_with_correct_data(self):
-    #     pass
+    @mock.patch('core.models.date')
+    @mock.patch('core.models.datetime')
+    def test_ordering_appetizer_for_yesterday(self, mock_datetime, mock_date):
+        mock_datetime.now.return_value.hour = 13
+        mock_date.today.return_value = date(2022, 9, 14)
 
-    # def test_ordering_breakfast_for_today_with_correct_data(self):
-    #     pass
+        data = {"food_item_id": 15, "order_date": "2022-09-13"}
+        response = self.client.post(path=self.path, data=data)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    @mock.patch('core.models.date')
+    @mock.patch('core.models.datetime')
+    def test_ordering_appetizer_for_today_after_time_is_over(self, mock_datetime, mock_date):
+        mock_datetime.now.return_value.hour = 20
+        mock_date.today.return_value = date(2022, 9, 12)
+
+        data = {"food_item_id": 15, "order_date": "2022-09-12"}
+        response = self.client.post(path=self.path, data=data)
+        self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
+
+    @mock.patch('core.models.date')
+    @mock.patch('core.models.datetime')
+    def test_ordering_appetizer_with_correct_data(self, mock_datetime, mock_date):
+        mock_datetime.now.return_value.hour = 16
+        mock_date.today.return_value = date(2022, 9, 12)
+
+        data = {"food_item_id": 15, "order_date": "2022-09-12"}
+        response = self.client.post(path=self.path, data=data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    @mock.patch('core.models.date')
+    @mock.patch('core.models.datetime')
+    def test_ordering_lunch_for_tomorrow_with_correct_data(self, mock_datetime, mock_date):
+        mock_datetime.now.return_value.hour = 16
+        mock_date.today.return_value = date(2022, 9, 12)
+
+        data = {"food_item_id": 6, "order_date": "2022-09-13"}
+        response = self.client.post(path=self.path, data=data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    @mock.patch('core.models.date')
+    @mock.patch('core.models.datetime')
+    def test_ordering_breakfast_for_tomorrow_with_correct_data(self, mock_datetime, mock_date):
+        mock_datetime.now.return_value.hour = 20
+        mock_date.today.return_value = date(2022, 9, 12)
+
+        data = {"food_item_id": 12, "order_date": "2022-09-13"}
+        response = self.client.post(path=self.path, data=data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    @mock.patch('core.models.date')
+    @mock.patch('core.models.datetime')
+    def test_ordering_breakfast_for_today_with_correct_data(self, mock_datetime, mock_date):
+        mock_datetime.now.return_value.hour = 7
+        mock_date.today.return_value = date(2022, 9, 13)
+
+        data = {"food_item_id": 12, "order_date": "2022-09-13"}
+        response = self.client.post(path=self.path, data=data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
