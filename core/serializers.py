@@ -1,3 +1,4 @@
+from datetime import date
 from rest_framework import serializers
 
 from core.models import Food, FoodItem, OrderItem
@@ -34,3 +35,6 @@ class OrderItemSerializer(serializers.ModelSerializer):
         model = OrderItem
         fields = ['food_item', 'time_submited', 'last_modified', 'state', ]
         
+class CreateOrderSerializer(serializers.Serializer):
+    food_item_id = serializers.IntegerField()
+    order_date = serializers.DateField()

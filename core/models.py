@@ -1,6 +1,10 @@
+from datetime import date, datetime
+from time import time
+
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 
 from core.managers import FoodItemManager, FoodManager, OrderItemManager
 
@@ -57,14 +61,110 @@ class FoodItem(models.Model):
     class Meta:
         ordering = ['-creation_time']
 
-    @property
-    def can_be_ordered(self) -> bool:
-        if self.amount is not None:
-            return self.amount > 0
+    def __food_weekday_matches_order_date(self, order_date):
+        if self.weekday == -1:
+            print('daily food can be ordered')
+            return True
+        return self.weekday == (order_date.weekday() - 2) % 7
+
+    def __user_has_ordered_limited_food(self, user, food_item_id, order_date:date):
+        print("\nchecking if user has ordered this food\n")
+        return user.user_orders.filter(food_item__id=food_item_id, order_date=order_date).exists()
+
+    def __user_can_order_breakfast(self, user, food_item_id, order_date:date) -> bool:
+        if datetime.now().hour >= settings.BREAKFAST_TIME_LIMIT:
+            print("\nout of breakfast time limit\n")
+            return False
+        elif date.today() < order_date:
+            print(order_date)
+            print("\nout of breakfast date\n")
+            return False
+        elif not self.__food_weekday_matches_order_date(order_date):
+            print('food_item doesnot match weekday')
+            return False
+        return not self.__user_has_ordered_limited_food(user, food_item_id, order_date)
+    
+    def __user_can_order_lunch(self, user, food_item_id, order_date:date):
+        print('\n', datetime.now().hour, "is woooooooooooooooooorking\n")
+        if datetime.now().hour >= settings.LUNCH_TIME_LIMIT:
+            print("\nout of lunch time limiit\n")
+            return False
+        elif date.today() <= order_date:
+            print(order_date, ' ++++++ ', date.today())
+            print("\nout of lunch date\n")
+            return False
+        elif not self.__food_weekday_matches_order_date(order_date):
+            print('food_item doesnot match weekday')
+            return False
+        return not self.__user_has_ordered_limited_food(user, food_item_id, order_date)
+    
+    def __check_time_limit(self):
+        if self.food.category == Food.foodCategories.BREAKFAST.value:
+            return datetime.now().hour < settings.BREAKFAST_TIME_LIMIT
+        elif self.food.category == Food.foodCategories.LUNCH.value:
+            return datetime.now().hour < settings.LUNCH_TIME_LIMIT
+
+    def __order_time_is_over(self, order_date:date):
+        date_difference = (date.today() - order_date).days
+
+        if self.food.category == Food.foodCategories.BREAKFAST.value:
+            if date_difference == 0:
+                return not self.__check_time_limit()
+            elif date_difference > 0:
+                return False
+        elif self.food.category == Food.foodCategories.LUNCH.value:
+            if date_difference == 1:
+                return not self.__check_time_limit()
+            elif date_difference > 1:
+                return False
         return True
 
-    def show_menu(self, weekday):
-        pass
+    def __user_can_order_limited_food(self, user, food_item_id, order_date):
+        print('\n', datetime.now().hour, "is woooooooooooooooooorking\n")
+        if self.__order_time_is_over(order_date):
+            print("\nout of order time limit\n")
+            return False
+        elif not self.__food_weekday_matches_order_date(order_date):
+            print('food_item doesnot match weekday')
+            return False
+        return not self.__user_has_ordered_limited_food(user, food_item_id, order_date)
+
+    def __user_can_order_item(self, user, food_item_id, order_date:date) -> bool:
+        if self.food.category == Food.foodCategories.APPETIZER.value:
+            print("\nordering a breakfast\n")
+            return True    
+        return self.__user_can_order_limited_food(user, food_item_id, order_date)
+            
+    def __food_is_sold_out(self) -> bool:
+        print("checking redis in here")
+        s_time = time()
+        try:
+            ordered_food_count = int(settings.REDIS_CONNECTION.get(f'{self.pk}').encode('utf-8'))
+            if ordered_food_count is None:
+                print('no data is available in redis for key: ', self.pk)
+                raise
+            print('redis is working fine and the food_count is: ', ordered_food_count)
+        except:
+            print("\n hitted 11111111  first 111111111 exception in redis\n")
+            today = date.today()
+            ordered_food_count = self.food_orders.filter(order_date=today).count()
+            try:
+                settings.REDIS_CONNECTION.set(name=f'{self.pk}', value=ordered_food_count)
+                print('added new value to redis: ', ordered_food_count)
+            except:
+                print("\n hitted 22222222222222222 exception in redis\n")
+                print("failed to add new value to redis")
+
+        print('checking redis completed')
+        print(self.amount, " -------- ", ordered_food_count)
+        print(f'\n took {time() - s_time} to complete redis query\n')
+        return self.amount == ordered_food_count
+    
+    def can_be_ordered(self, user, order_date:date) -> bool:
+        user_can_order = self.__user_can_order_item(user, self.pk, order_date)
+        print("\nuser can order food: ", user_can_order)
+        sold_out = self.__food_is_sold_out()
+        return user_can_order and not sold_out
 
     def __str__(self) -> str:
         return f"{self.food.name}: {self.price}"
@@ -84,25 +184,12 @@ class OrderItem(models.Model):
 
     food_item = models.ForeignKey(to= FoodItem, on_delete=models.PROTECT, related_name="food_orders")
     user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='user_orders')
+    order_date = models.DateField(verbose_name='oreder date')
     time_submited = models.DateTimeField(verbose_name=_("submition time"), auto_now_add=True)
     last_modified = models.DateTimeField(verbose_name=_("modification time"), auto_now=True)
     state = models.SmallIntegerField(verbose_name=_("state"), choices=stateChoices.choices, default=stateChoices.SUBMITED.value)
     last_modifier = models.SmallIntegerField(verbose_name=_("last modifier"), choices=modifierChoices.choices)
     objects = OrderItemManager()
-
-    def can_be_ordered(self) -> bool:
-        pass #change after redis is added to project
-
-    def can_be_canceled(self) -> bool:
-        if self.state != self.stateChoices.SUBMITED.value:
-            return False
-        # TODO: check time and return True if order can be canceled
-
-    def can_be_served(self) -> bool:
-        pass
-
-    def can_be_accepted(self) -> bool:
-        pass
 
     def cancel_order(self, user) -> None:
         if user.is_staff:
@@ -112,15 +199,9 @@ class OrderItem(models.Model):
         self.state = self.stateChoices.CANCELED.value
         self.save()
     
-    def accept_order(self) -> None:
-        pass
-    
-    def serve_order(self) -> None:
-        pass
-    
-
     def __str__(self) -> str:
         return f"{self.food_item.food.name}"
+
 
 class FoodRate(models.Model):
     

@@ -1,6 +1,8 @@
+from email.policy import default
 from pathlib import Path
 from decouple import config, Csv
 from datetime import timedelta
+import redis
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -67,6 +69,12 @@ DATABASES = {
     }
 }
 
+REDIS_CONNECTION = redis.Redis(
+    host=config('REDIS_DB_HOST'),
+    port=config('REDIS_DB_PORT', cast=int, default=6379),
+    db=config('REDIS_DB', cast=int, default=0),
+)
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -118,10 +126,10 @@ SIMPLE_JWT = {
 }
 
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tehran'
 USE_I18N = True
 USE_L10N = True
-USE_TZ = True
+USE_TZ = False
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (
@@ -137,3 +145,6 @@ AUTH_USER_MODEL = 'accounts.User'
 FOOD_PAGE_SIZE = 10
 MENU_PAGE_SIZE = 10
 DEFAULT_PAGE_SIZE = 10
+
+LUNCH_TIME_LIMIT = 18
+BREAKFAST_TIME_LIMIT = 10
