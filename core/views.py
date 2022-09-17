@@ -11,7 +11,7 @@ from rest_framework import status
 from django.db.models import Q
 
 
-from core.serializers import CreateOrderSerializer, FoodItemDetailSerializer, FoodItemserializer, FoodListSerializer, FoodSerializer, OrderItemSerializer
+from core.serializers import CancelOrderSerializer, CreateOrderSerializer, FoodItemDetailSerializer, FoodItemserializer, FoodListSerializer, FoodSerializer, OrderItemSerializer
 from core.models import Food, FoodItem, OrderItem
 
 
@@ -49,23 +49,51 @@ class MenuItemView(APIView):
         serialized_data = self.serializer_class(fooditem)
         return Response(data=serialized_data.data, status=status.HTTP_200_OK)
 
-# finished menuitem
+# finished order-submittion
 class CreateOrderView(APIView):
     serializer_class = CreateOrderSerializer
     permission_classes = [IsAuthenticated, ]
 
     def post(self, request):
+        
         serialized_data = self.serializer_class(data= request.data)
         if serialized_data.is_valid():
             food_item = get_object_or_404(FoodItem, pk=serialized_data.validated_data.get('food_item_id'))
             order_date = serialized_data.validated_data.get('order_date')
             if food_item.can_be_ordered(request.user, order_date=order_date):
-                OrderItem.objects.create(food_item = food_item, user=request.user, last_modifier = 0, order_date = order_date) #TODO change to a class method from orderitem Model
+                OrderItem.objects.create(food_item = food_item, user=request.user, order_date = order_date) #TODO change to a class method from orderitem Model
                 return Response(status=status.HTTP_201_CREATED)
             else:
                 return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
 
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+# finished order-cancelation
+class CancelOrderView(APIView):
+    serializer_class = CancelOrderSerializer
+    permission_classes = [IsAuthenticated, ]
+
+    def post(self, request):
+        serialized_data = self.serializer_class(data=request.data)
+        if serialized_data.is_valid():
+            order_item = get_object_or_404(OrderItem.objects.select_related('food_item', 'food_item__food'), pk = serialized_data.validated_data.get('order_item_id'))
+            if order_item.can_be_canceled(request.user):
+                order_item.cancel_order(request.user)
+                return Response(status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class ShowOrdersView(APIView):
@@ -87,14 +115,6 @@ class ShowOrderView(APIView):
         order_item = get_object_or_404(OrderItem, pk = order_id)
         serialized_data = self.serializer_class(order_item)
         return Response(data=serialized_data.data, status=status.HTTP_200_OK)
-
-
-class CancelOrderView(APIView):
-    serializer_class = OrderItemSerializer # TODO: change serializer
-    permission_classes = [IsAuthenticated, ] # TODO: add permission to check if order belongs to request.user
-
-    def put(self, request):
-        pass
 
 
 class FoodView(APIView):

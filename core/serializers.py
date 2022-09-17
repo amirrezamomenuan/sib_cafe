@@ -38,3 +38,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 class CreateOrderSerializer(serializers.Serializer):
     food_item_id = serializers.IntegerField()
     order_date = serializers.DateField()
+
+
+class CancelOrderSerializer(serializers.Serializer):
+    order_item_id = serializers.IntegerField()

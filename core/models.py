@@ -140,8 +140,8 @@ class OrderItem(models.Model):
 
     class stateChoices(models.IntegerChoices):
         SUBMITED = 0, _('submited')
-        ACCEPTED = 1, _('accepted')
-        SERVED = 2, _('served')
+        SERVED = 1, _('served')
+        PAYED = 2, _('payed')
         CANCELED = -1, _('canceled')
     
     class modifierChoices(models.IntegerChoices):
@@ -154,8 +154,36 @@ class OrderItem(models.Model):
     time_submited = models.DateTimeField(verbose_name=_("submition time"), auto_now_add=True)
     last_modified = models.DateTimeField(verbose_name=_("modification time"), auto_now=True)
     state = models.SmallIntegerField(verbose_name=_("state"), choices=stateChoices.choices, default=stateChoices.SUBMITED.value)
-    last_modifier = models.SmallIntegerField(verbose_name=_("last modifier"), choices=modifierChoices.choices)
-    objects = OrderItemManager()
+    last_modifier = models.SmallIntegerField(verbose_name=_("last modifier"), choices=modifierChoices.choices, default=modifierChoices.ADMIN.value)
+
+    def __todays_order_is_getting_canceled(self) -> bool:
+        date_difference = (self.order_date - date.today()).days
+        if date_difference == 0:
+            return True
+        return False
+
+    def __reached_cancel_time_limit(self) -> bool:
+        if not self.__todays_order_is_getting_canceled():
+            return False
+        if self.food_item.food.category == Food.foodCategories.BREAKFAST.value:
+            if datetime.now().hour > settings.BREAKFAST_CANCEL_TIME_LIMIT:
+                return True
+        elif self.food_item.food.category == Food.foodCategories.LUNCH.value:
+            if datetime.now().hour > settings.LUNCH_CANCEL_TIME_LIMIT:
+                return True
+        else:
+            if datetime.now().hour > settings.APPETIZER_CANCEL_TIME_LIMIT:
+                return True
+        return False
+
+    def can_be_canceled(self, user) -> bool:
+        if user != self.user:
+            return False
+        if self.__reached_cancel_time_limit():
+            return False
+        if self.state != self.stateChoices.SUBMITED.value:
+            return False
+        return True
 
     def cancel_order(self, user) -> None:
         if user.is_staff:
