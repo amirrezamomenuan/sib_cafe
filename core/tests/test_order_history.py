@@ -34,7 +34,7 @@ class TestCancelOrder(APITestCase):
         self.client2 = APIClient()
         self.client2.credentials(HTTP_AUTHORIZATION=f'Bearer {self.access_token2}')
 
-        self.path = reverse('order-detail')
+        self.path = reverse('order-list')
     
 
         kabab = Food.objects.create(
@@ -63,36 +63,86 @@ class TestCancelOrder(APITestCase):
         kabab_item = FoodItem.objects.create(id = 1, food=kabab, amount=3, price=150000, weekday=FoodItem.dayChoices.SATURDAY.value)
         fries_item = FoodItem.objects.create(id = 3, food=fries, price=10000, weekday=FoodItem.dayChoices.EVERY_DAY.value)
         omelette_item = FoodItem.objects.create(id = 5, food=omelette, amount=15, price=18000, weekday=FoodItem.dayChoices.EVERY_DAY.value)
+        soda_item = FoodItem.objects.create(id = 6, food=soda_can, price=12000, weekday=FoodItem.dayChoices.EVERY_DAY.value)
 
         o1 = OrderItem.objects.create(id = 1, food_item = kabab_item, user= user, order_date = date(2022, 9, 17), state = OrderItem.stateChoices.PAYED.value)
         o2 = OrderItem.objects.create(id = 2, food_item = kabab_item, user= user, order_date = date(2022, 9, 18), state = OrderItem.stateChoices.CANCELED.value)
-        o3 = OrderItem.objects.create(id = 3, food_item = kabab_item, user= user, order_date = date(2022, 8, 22), state = OrderItem.stateChoices.SERVED.value)
+        o3 = OrderItem.objects.create(id = 3, food_item = omelette_item, user= user, order_date = date(2022, 8, 22), state = OrderItem.stateChoices.SERVED.value)
         o4 = OrderItem.objects.create(id = 4, food_item = kabab_item, user= user2, order_date = date(2022, 9, 14), state = OrderItem.stateChoices.SUBMITED.value)
         o5 = OrderItem.objects.create(id = 5, food_item = omelette_item, user= user2, order_date = date(2022, 3, 1), state = OrderItem.stateChoices.SUBMITED.value)
-        o6 = OrderItem.objects.create(id = 6, food_item = fries_item, user= user, order_date = date(2022, 12, 29), state = OrderItem.stateChoices.SUBMITED.value)
+        o6 = OrderItem.objects.create(id = 6, food_item = fries_item, user= user, order_date = date(2022, 3, 29), state = OrderItem.stateChoices.SUBMITED.value)
+        o7 = OrderItem.objects.create(id = 7, food_item = soda_item, user= user, order_date = date(2022, 12, 27), state = OrderItem.stateChoices.SUBMITED.value)
+        o8 = OrderItem.objects.create(id = 8, food_item = soda_item, user= user, order_date = date(2022, 11, 29), state = OrderItem.stateChoices.PAYED.value)
+        o9 = OrderItem.objects.create(id = 9, food_item = fries_item, user= user, order_date = date(2021, 2, 2), state = OrderItem.stateChoices.SUBMITED.value)
+        o10 = OrderItem.objects.create(id = 10, food_item = kabab_item, user= user, order_date = date(2022, 7, 19), state = OrderItem.stateChoices.SERVED.value)
 
-    def test_post_method(self):
-        response = self.client2.post(path=self.path + '?order_id=5')
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-    
     def test_without_providing_authentication_credentials(self):
         client = APIClient()
-        response = client.get(path=self.path + '?order_id=5')
+        response = client.get(self.path)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-    
-    def test_without_providing_order_id(self):
-        response = self.client2.get(path=self.path)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-    
-    def test_with_order_id_that_does_not_exist(self):
-        response = self.client2.get(path=self.path + '?order_id=1570456045')
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-    
-    def test_with_correct_id_and_wrong_user(self):
-        response = self.client2.get(path=self.path + '?order_id=1')
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_with_correct_id_and_correct_user(self):
-        response = self.client.get(path=self.path + '?order_id=2')
-        print(response.json())
+    def test_post_method(self):
+        response = self.client.post(path=self.path)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_without_limit_offset(self):
+        path = self.path
+        response = self.client.get(path=path)
+        json_response = response.json().get('results')
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(json_response), 8)
+        self.assertEqual(json_response[0].get('order_date'), '2022-12-27')
+        self.assertEqual(json_response[1].get('order_date'), '2022-11-29')
+        self.assertEqual(json_response[2].get('order_date'), '2022-09-18')
+        self.assertEqual(json_response[6].get('order_date'), '2022-03-29')
+        self.assertEqual(json_response[7].get('order_date'), '2021-02-02')
+
+    def test_with_limit_and_without_offset(self):
+        path = self.path + '?limit=3'
+        response = self.client.get(path=path)
+        json_response = response.json().get('results')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(json_response), 3)
+        self.assertEqual(json_response[0].get('order_date'), '2022-12-27')
+        self.assertEqual(json_response[1].get('order_date'), '2022-11-29')
+        self.assertEqual(json_response[2].get('order_date'), '2022-09-18')
+
+    def test_without_limit_and_with_offset(self):
+        path = self.path + '?offset=4'
+        response = self.client.get(path=path)
+        json_response = response.json().get('results')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(json_response), 4)
+        self.assertEqual(json_response[0].get('order_date'), '2022-08-22')
+        self.assertEqual(json_response[1].get('order_date'), '2022-07-19')
+        self.assertEqual(json_response[2].get('order_date'), '2022-03-29')
+        self.assertEqual(json_response[3].get('order_date'), '2021-02-02')
+    
+    def test_with_limit_and_offset(self):
+        path = self.path + '?limit=3&offset=7'
+        response = self.client.get(path=path)
+        json_response = response.json().get('results')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(json_response), 1)
+        self.assertEqual(json_response[0].get('order_date'), '2021-02-02')
+
+
+    def test_with_invalid_limit_and_offset(self):
+        path = self.path + '?limit=2763&offset=3846331'
+        response = self.client.get(path=path)
+        json_response = response.json().get('results')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(json_response), 0)
+    
+    def test_client2_price_with_limit_and_offset(self):
+        path = self.path + '?limit=5&offset=1'
+        response = self.client2.get(path=path)
+        json_response = response.json().get('results')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(json_response), 1)
+        self.assertEqual(json_response[0].get('food_item').get('price'), 18000)

@@ -29,6 +29,7 @@ class MenuView(ListAPIView):
     permission_classes = [AllowAny, ]
     pagination_class = LimitOffsetPagination
     queryset = FoodItem.objects.all()
+    default_limit = 60
 
     def get_queryset(self):
         order_parameter = self.request.query_params.get('order_by', '-creation_time')
@@ -103,37 +104,24 @@ class OrderDetailView(APIView):
         return Response(data=serialized_data.data, status=status.HTTP_200_OK)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-class ShowOrdersView(APIView):
-    serializer_class = OrderItemSerializer # TODO: change serializer
+class OrderListView(ListAPIView):
+    serializer_class = OrderItemSerializer
     permission_classes = [IsAuthenticated, ]
+    pagination_class = LimitOffsetPagination
+    queryset = OrderItem.objects.all()
+    default_limit = 50
 
-    def get(self, request):
-        page = int(request.GET.get("page", 1))
-        order_items = OrderItem.objects.get_user_orders(user= request.user).get_page(page)
-        serialized_data = self.serializer_class(order_items, many= True)
-        return Response(data=serialized_data.data, status=status.HTTP_200_OK)
+    def get_queryset(self):
+        return self.queryset.filter(user = self.request.user)
 
 
-class ShowOrderView(APIView):
-    serializer_class = OrderItemSerializer # TODO: change serializer
-    permission_classes = [IsAuthenticated, ] # TODO: add permission to check if order belongs to request.user
 
-    def get(self, request, order_id):
-        order_item = get_object_or_404(OrderItem, pk = order_id)
-        serialized_data = self.serializer_class(order_item)
-        return Response(data=serialized_data.data, status=status.HTTP_200_OK)
+
+
+
+
+
+
 
 
 class FoodView(APIView):

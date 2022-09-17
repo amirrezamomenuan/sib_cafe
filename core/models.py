@@ -156,6 +156,9 @@ class OrderItem(models.Model):
     state = models.SmallIntegerField(verbose_name=_("state"), choices=stateChoices.choices, default=stateChoices.SUBMITED.value)
     last_modifier = models.SmallIntegerField(verbose_name=_("last modifier"), choices=modifierChoices.choices, default=modifierChoices.ADMIN.value)
 
+    class Meta:
+        ordering = ['-order_date', '-time_submited']
+
     def __todays_order_is_getting_canceled(self) -> bool:
         date_difference = (self.order_date - date.today()).days
         if date_difference == 0:

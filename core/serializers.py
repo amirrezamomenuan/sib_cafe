@@ -34,7 +34,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ['food_item', 'time_submited', 'last_modified', 'state', ]
+        fields = ['food_item', 'time_submited', 'last_modified', 'state', 'order_date']
         
 
 class CreateOrderSerializer(serializers.Serializer):

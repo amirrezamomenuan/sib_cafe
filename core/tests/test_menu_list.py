@@ -97,15 +97,17 @@ class TestMenuList(APITestCase):
         query_params = '?weekday=0'
         url = reverse('menu') + query_params
         response = self.client.get(url)
+        json_response = response.json().get('results')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 8)
+        self.assertEqual(len(json_response), 8)
 
     def test_menu_list_without_limit_offset_and_with_another_weekday_given(self):
         query_params = '?weekday=4'
         url = reverse('menu') + query_params
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 10)
+        json_response = response.json().get('results')
+        self.assertEqual(len(json_response), 10)
 
     def test_menu_list_without_limit_offset_and_with_todays_weekday(self):
         week_day = (date.weekday(date.today()) + 2) % 7
@@ -116,23 +118,25 @@ class TestMenuList(APITestCase):
         url = reverse('menu') + query_params
         response = self.client.get(url)
         todays_menu_count = FoodItem.objects.filter(Q(weekday= week_day) | Q(weekday = -1)).count()
-
+        json_response = response.json().get('results')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), todays_menu_count)
+        self.assertEqual(len(json_response), todays_menu_count)
 
     def test_menu_list_without_limit_offset_and_with_invalid_weekday(self):
         query_params = '?weekday=6'
         url = reverse('menu') + query_params
         response = self.client.get(url)
-        self.assertEqual(len(response.json()), 0)
+        json_response = response.json().get('results')
+        self.assertEqual(len(json_response), 0)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_menu_list_with_limit_offset(self):
         query_params = '?weekday=4&limit=5&offset=6'
         url = reverse('menu') + query_params
         response = self.client.get(url)
+        json_response = response.json().get('results')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 4)
+        self.assertEqual(len(json_response), 4)
 
     def test_menu_list_order_by_highest_price_limit_offset(self):
         query_params = '?weekday=4&limit=10&offset=2&order_by=-price'
@@ -169,5 +173,6 @@ class TestMenuList(APITestCase):
         query_params = '?weekday=1'
         url = reverse('menu') + query_params
         response = self.client.get(url)
+        json_response = response.json().get('results')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.json()), 6)
+        self.assertEqual(len(json_response), 6)
