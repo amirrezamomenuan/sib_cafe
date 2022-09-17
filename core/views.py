@@ -11,7 +11,15 @@ from rest_framework import status
 from django.db.models import Q
 
 
-from core.serializers import CancelOrderSerializer, CreateOrderSerializer, FoodItemDetailSerializer, FoodItemserializer, FoodListSerializer, FoodSerializer, OrderItemSerializer
+from core.serializers import (CancelOrderSerializer,
+                            CreateOrderSerializer,
+                            FoodItemDetailSerializer,
+                            FoodItemserializer,
+                            FoodListSerializer,
+                            FoodSerializer,
+                            OrderItemSerializer,
+                            OrderItemDetailSerializer,
+                            )
 from core.models import Food, FoodItem, OrderItem
 
 
@@ -82,6 +90,17 @@ class CancelOrderView(APIView):
                 return Response(status=status.HTTP_200_OK)
             return Response(status=status.HTTP_403_FORBIDDEN)
         return Response(status=status.HTTP_400_BAD_REQUEST)
+
+#finished order-detail
+class OrderDetailView(APIView):
+    serializer_class = OrderItemDetailSerializer
+    permission_classes = [IsAuthenticated, ]
+
+    def get(self, request):
+        order_id = request.query_params.get('order_id')
+        order_item = get_object_or_404(OrderItem, pk=order_id, user=request.user)
+        serialized_data = self.serializer_class(order_item)
+        return Response(data=serialized_data.data, status=status.HTTP_200_OK)
 
 
 

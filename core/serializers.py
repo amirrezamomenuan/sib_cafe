@@ -8,6 +8,7 @@ class FoodSerializer(serializers.ModelSerializer):
         model = Food
         fields = ['name', 'description', 'category', "image", ]
 
+
 class FoodListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Food
@@ -35,6 +36,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         model = OrderItem
         fields = ['food_item', 'time_submited', 'last_modified', 'state', ]
         
+
 class CreateOrderSerializer(serializers.Serializer):
     food_item_id = serializers.IntegerField()
     order_date = serializers.DateField()
@@ -42,3 +44,10 @@ class CreateOrderSerializer(serializers.Serializer):
 
 class CancelOrderSerializer(serializers.Serializer):
     order_item_id = serializers.IntegerField()
+
+
+class OrderItemDetailSerializer(serializers.ModelSerializer):
+    food_item = FoodItemserializer()
+    class Meta:
+        model = OrderItem
+        fields = ['food_item', 'state', 'order_date', 'time_submited']

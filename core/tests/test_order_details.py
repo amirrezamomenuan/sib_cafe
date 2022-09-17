@@ -64,12 +64,9 @@ class TestCancelOrder(APITestCase):
         fries_item = FoodItem.objects.create(id = 3, food=fries, price=10000, weekday=FoodItem.dayChoices.EVERY_DAY.value)
         omelette_item = FoodItem.objects.create(id = 5, food=omelette, amount=15, price=18000, weekday=FoodItem.dayChoices.EVERY_DAY.value)
 
-        o1 = OrderItem.objects.create(id = 1, food_item = kabab_item, user= user, order_date = date(2022, 9, 17), state = OrderItem.stateChoices.PAYED.value)
-        o2 = OrderItem.objects.create(id = 2, food_item = kabab_item, user= user, order_date = date(2022, 9, 18), state = OrderItem.stateChoices.CANCELED.value)
-        o3 = OrderItem.objects.create(id = 3, food_item = kabab_item, user= user, order_date = date(2022, 8, 22), state = OrderItem.stateChoices.SERVED.value)
-        o4 = OrderItem.objects.create(id = 4, food_item = kabab_item, user= user2, order_date = date(2022, 9, 14), state = OrderItem.stateChoices.SUBMITED.value)
-        o5 = OrderItem.objects.create(id = 5, food_item = omelette_item, user= user2, order_date = date(2022, 3, 1), state = OrderItem.stateChoices.SUBMITED.value)
-        o6 = OrderItem.objects.create(id = 6, food_item = fries_item, user= user, order_date = date(2022, 12, 29), state = OrderItem.stateChoices.SUBMITED.value)
+        OrderItem.objects.create(id = 1, food_item = kabab_item, user= user, order_date = date(2022, 9, 17), state = OrderItem.stateChoices.PAYED.value)
+        OrderItem.objects.create(id = 2, food_item = kabab_item, user= user, order_date = date(2022, 9, 18), state = OrderItem.stateChoices.CANCELED.value)
+        OrderItem.objects.create(id = 5, food_item = omelette_item, user= user2, order_date = date(2022, 3, 1), state = OrderItem.stateChoices.SUBMITED.value)
 
     def test_post_method(self):
         response = self.client2.post(path=self.path + '?order_id=5')
@@ -94,5 +91,4 @@ class TestCancelOrder(APITestCase):
 
     def test_with_correct_id_and_correct_user(self):
         response = self.client.get(path=self.path + '?order_id=2')
-        print(response.json())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
