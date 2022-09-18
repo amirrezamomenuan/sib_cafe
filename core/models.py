@@ -60,54 +60,7 @@ class FoodItem(models.Model):
     class Meta:
         ordering = ['-creation_time']
 
-    def __food_weekday_matches_order_date(self, order_date):
-        if self.weekday == -1:
-            return True
-        return self.weekday == (order_date.weekday() + 2) % 7
-
-    def __user_has_ordered_limited_food(self, user, food_item_id, order_date:date):
-        return user.user_orders.filter(food_item__id=food_item_id, order_date=order_date).exists()
-
-    def __check_time_limit(self):
-        if self.food.category == Food.foodCategories.BREAKFAST.value:
-            return datetime.now().hour < settings.BREAKFAST_TIME_LIMIT
-        elif self.food.category == Food.foodCategories.LUNCH.value:
-            return datetime.now().hour < settings.LUNCH_TIME_LIMIT
-        return datetime.now().hour < settings.APPETIZER_TIME_LIMIT
-
-    def __order_time_is_over(self, order_date:date):
-        date_difference = (order_date - date.today()).days
-        if date_difference >= 7:
-            return True
-
-        if self.food.category == Food.foodCategories.BREAKFAST.value:
-            if date_difference == 0:
-                return not self.__check_time_limit()
-            elif date_difference > 0:
-                return False
-        elif self.food.category == Food.foodCategories.LUNCH.value:
-            if date_difference == 1:
-                return not self.__check_time_limit()
-            elif date_difference > 1:
-                return False
-        else:
-            if date_difference == 0:
-                return not self.__check_time_limit()
-        return True
-
-    def __user_can_order_limited_food(self, user, food_item_id, order_date):
-        if self.__order_time_is_over(order_date):
-            return False
-        elif not self.__food_weekday_matches_order_date(order_date):
-            return False
-        return not self.__user_has_ordered_limited_food(user, food_item_id, order_date)
-
-    def __user_can_order_item(self, user, food_item_id, order_date:date) -> bool:
-        if self.food.category == Food.foodCategories.APPETIZER.value:
-            return not self.__order_time_is_over(order_date)   
-        return self.__user_can_order_limited_food(user, food_item_id, order_date)
-            
-    def __food_is_sold_out(self) -> bool:
+    def food_is_sold_out(self) -> bool:
         if self.amount is None:
             return False
         try:
@@ -125,12 +78,6 @@ class FoodItem(models.Model):
                 pass
 
         return self.amount <= ordered_food_count
-    
-    def can_be_ordered(self, user, order_date:date) -> bool:
-        user_can_order = self.__user_can_order_item(user, self.pk, order_date)
-        if not user_can_order:
-            return False
-        return user_can_order and not self.__food_is_sold_out()
 
     def __str__(self) -> str:
         return f"{self.food.name}: {self.price}"
@@ -159,12 +106,66 @@ class OrderItem(models.Model):
     class Meta:
         ordering = ['-order_date', '-time_submited']
 
+    def __food_weekday_matches_order_date(self, order_date:date) -> bool:
+        if self.food_item.weekday == -1:
+            return True
+        return self.food_item.weekday == (order_date.weekday() + 2) % 7
+
+    def __user_has_ordered_limited_food(self) -> bool:
+        return self.user.user_orders.filter(food_item__id=self.food_item.id, order_date=self.order_date).exists()
+
+    def __check_time_limit(self):
+        if self.food_item.food.category == Food.foodCategories.BREAKFAST.value:
+            return datetime.now().hour < settings.BREAKFAST_TIME_LIMIT
+        elif self.food_item.food.category == Food.foodCategories.LUNCH.value:
+            return datetime.now().hour < settings.LUNCH_TIME_LIMIT
+        return datetime.now().hour < settings.APPETIZER_TIME_LIMIT
+
+    def __order_time_is_over(self, order_date:date):
+        date_difference = (order_date - date.today()).days
+        if date_difference >= 7:
+            return True
+
+        if self.food_item.food.category == Food.foodCategories.BREAKFAST.value:
+            if date_difference == 0:
+                return not self.__check_time_limit()
+            elif date_difference > 0:
+                return False
+        elif self.food_item.food.category == Food.foodCategories.LUNCH.value:
+            if date_difference == 1:
+                return not self.__check_time_limit()
+            elif date_difference > 1:
+                return False
+        else:
+            if date_difference == 0:
+                return not self.__check_time_limit()
+        return True
+
+    def __user_can_order_limited_food(self, order_date):
+        if self.__order_time_is_over(order_date):
+            return False
+        elif not self.__food_weekday_matches_order_date(order_date):
+            return False
+        return not self.__user_has_ordered_limited_food()
+
+    def __user_can_order_item(self) -> bool:
+        if self.food_item.food.category == Food.foodCategories.APPETIZER.value:
+            return not self.__order_time_is_over(self.order_date)   
+        return self.__user_can_order_limited_food(self.order_date)
+
+    def can_be_submitted(self) -> bool:
+        user_can_order = self.__user_can_order_item()
+        if not user_can_order:
+            return False
+        return user_can_order and not self.food_item.food_is_sold_out()
+
+
     def __todays_order_is_getting_canceled(self) -> bool:
         date_difference = (self.order_date - date.today()).days
         if date_difference == 0:
             return True
         return False
-
+    
     def __reached_cancel_time_limit(self) -> bool:
         if not self.__todays_order_is_getting_canceled():
             return False

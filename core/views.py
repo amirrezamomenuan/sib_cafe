@@ -65,17 +65,15 @@ class CreateOrderView(APIView):
     permission_classes = [IsAuthenticated, ]
 
     def post(self, request):
-        
         serialized_data = self.serializer_class(data= request.data)
         if serialized_data.is_valid():
-            food_item = get_object_or_404(FoodItem, pk=serialized_data.validated_data.get('food_item_id'))
-            order_date = serialized_data.validated_data.get('order_date')
-            if food_item.can_be_ordered(request.user, order_date=order_date):
-                OrderItem.objects.create(food_item = food_item, user=request.user, order_date = order_date) #TODO change to a class method from orderitem Model
+            order_item = OrderItem(user = request.user, **serialized_data.validated_data)
+            if order_item.can_be_submitted():
+                order_item.save()
                 return Response(status=status.HTTP_201_CREATED)
             else:
                 return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
-
+        
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 # finished order-cancelation

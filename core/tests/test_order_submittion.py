@@ -130,7 +130,7 @@ class TestOrderSubmittion(APITestCase):
     def test_ordering_an_item_that_does_not_exist_on_menu_for_specific_weekday(self, mock_datetime, mock_date):
         mock_datetime.now.return_value.hour = 14
         mock_date.today.return_value = date(2022, 9, 8)
-        data = {"food_item_id": 5, "order_date": "2022-09-10"}
+        data = {"food_item": 5, "order_date": "2022-09-10"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -140,7 +140,7 @@ class TestOrderSubmittion(APITestCase):
         mock_datetime.now.return_value.hour = 7
         mock_date.today.return_value = date(2022, 9, 15)
 
-        data = {"food_item_id": 13, "order_date": "2022-09-15"}
+        data = {"food_item": 13, "order_date": "2022-09-15"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.post(path=self.path, data=data)
@@ -152,7 +152,7 @@ class TestOrderSubmittion(APITestCase):
         mock_datetime.now.return_value.hour = 14
         mock_date.today.return_value = date(2022, 9, 11)
 
-        data = {"food_item_id": 3, "order_date": "2022-09-13"}
+        data = {"food_item": 3, "order_date": "2022-09-13"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response = self.client.post(path=self.path, data=data)
@@ -165,7 +165,7 @@ class TestOrderSubmittion(APITestCase):
         mock_date.today.return_value = date(2022, 9, 15)
         settings.REDIS_CONNECTION.set(name='12', value= 15)
     
-        data = {"food_item_id": 12, "order_date": "2022-09-15"}
+        data = {"food_item": 12, "order_date": "2022-09-15"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -176,7 +176,7 @@ class TestOrderSubmittion(APITestCase):
         mock_date.today.return_value = date(2022, 9, 11)
         settings.REDIS_CONNECTION.set(name='5', value= 10)
 
-        data = {"food_item_id": 5, "order_date": "2022-09-12"}
+        data = {"food_item": 5, "order_date": "2022-09-12"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -186,7 +186,7 @@ class TestOrderSubmittion(APITestCase):
         mock_datetime.now.return_value.hour = 12
         mock_date.today.return_value = date(2022, 9, 12)
 
-        data = {"food_item_id": 13, "order_date": "2022-09-12"}
+        data = {"food_item": 13, "order_date": "2022-09-12"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -196,7 +196,7 @@ class TestOrderSubmittion(APITestCase):
         mock_datetime.now.return_value.hour = 19
         mock_date.today.return_value = date(2022, 9, 13)
 
-        data = {"food_item_id": 4, "order_date": "2022-09-14"}
+        data = {"food_item": 4, "order_date": "2022-09-14"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -206,7 +206,7 @@ class TestOrderSubmittion(APITestCase):
         mock_datetime.now.return_value.hour = 13
         mock_date.today.return_value = date(2022, 9, 14)
 
-        data = {"food_item_id": 4, "order_date": "2022-09-14"}
+        data = {"food_item": 4, "order_date": "2022-09-14"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -216,7 +216,7 @@ class TestOrderSubmittion(APITestCase):
         mock_datetime.now.return_value.hour = 8
         mock_date.today.return_value = date(2022, 9, 15)
 
-        data = {"food_item_id": 12, "order_date": "2022-09-14"}
+        data = {"food_item": 12, "order_date": "2022-09-14"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -226,7 +226,7 @@ class TestOrderSubmittion(APITestCase):
         mock_datetime.now.return_value.hour = 13
         mock_date.today.return_value = date(2022, 9, 15)
 
-        data = {"food_item_id": 12, "order_date": "2022-09-14"}
+        data = {"food_item": 12, "order_date": "2022-09-14"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -236,7 +236,7 @@ class TestOrderSubmittion(APITestCase):
         mock_datetime.now.return_value.hour = 13
         mock_date.today.return_value = date(2022, 9, 14)
 
-        data = {"food_item_id": 3, "order_date": "2022-09-13"}
+        data = {"food_item": 3, "order_date": "2022-09-13"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -246,7 +246,7 @@ class TestOrderSubmittion(APITestCase):
         mock_datetime.now.return_value.hour = 21
         mock_date.today.return_value = date(2022, 9, 14)
 
-        data = {"food_item_id": 3, "order_date": "2022-09-13"}
+        data = {"food_item": 3, "order_date": "2022-09-13"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -256,7 +256,7 @@ class TestOrderSubmittion(APITestCase):
         mock_datetime.now.return_value.hour = 15
         mock_date.today.return_value = date(2022, 9, 14)
 
-        data = {"food_item_id": 2, "order_date": "2022-09-07"}
+        data = {"food_item": 2, "order_date": "2022-09-07"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -266,7 +266,7 @@ class TestOrderSubmittion(APITestCase):
         mock_datetime.now.return_value.hour = 6
         mock_date.today.return_value = date(2022, 9, 14)
 
-        data = {"food_item_id": 2, "order_date": "2022-09-07"}
+        data = {"food_item": 2, "order_date": "2022-09-07"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -276,7 +276,7 @@ class TestOrderSubmittion(APITestCase):
         mock_datetime.now.return_value.hour = 13
         mock_date.today.return_value = date(2022, 9, 14)
 
-        data = {"food_item_id": 15, "order_date": "2022-09-13"}
+        data = {"food_item": 15, "order_date": "2022-09-13"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -286,7 +286,7 @@ class TestOrderSubmittion(APITestCase):
         mock_datetime.now.return_value.hour = 20
         mock_date.today.return_value = date(2022, 9, 12)
 
-        data = {"food_item_id": 15, "order_date": "2022-09-12"}
+        data = {"food_item": 15, "order_date": "2022-09-12"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -296,7 +296,7 @@ class TestOrderSubmittion(APITestCase):
         mock_datetime.now.return_value.hour = 16
         mock_date.today.return_value = date(2022, 9, 12)
 
-        data = {"food_item_id": 15, "order_date": "2022-09-12"}
+        data = {"food_item": 15, "order_date": "2022-09-12"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -306,7 +306,7 @@ class TestOrderSubmittion(APITestCase):
         mock_datetime.now.return_value.hour = 16
         mock_date.today.return_value = date(2022, 9, 12)
 
-        data = {"food_item_id": 6, "order_date": "2022-09-13"}
+        data = {"food_item": 6, "order_date": "2022-09-13"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -316,7 +316,7 @@ class TestOrderSubmittion(APITestCase):
         mock_datetime.now.return_value.hour = 20
         mock_date.today.return_value = date(2022, 9, 12)
 
-        data = {"food_item_id": 12, "order_date": "2022-09-13"}
+        data = {"food_item": 12, "order_date": "2022-09-13"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
@@ -326,6 +326,6 @@ class TestOrderSubmittion(APITestCase):
         mock_datetime.now.return_value.hour = 7
         mock_date.today.return_value = date(2022, 9, 13)
 
-        data = {"food_item_id": 12, "order_date": "2022-09-13"}
+        data = {"food_item": 12, "order_date": "2022-09-13"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
