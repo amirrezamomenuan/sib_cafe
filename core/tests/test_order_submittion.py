@@ -8,13 +8,22 @@ from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from django.conf import settings
 
-from core.models import Food, FoodItem
+from core.models import Food, FoodItem 
 
 User = get_user_model()
 
 
 class TestOrderSubmittion(APITestCase):
     def setUp(self) -> None:
+        # datetime_patcher = mock.patch.object(
+        #     my_module.datetime, 'datetime', 
+
+        #     mock.Mock(wraps=datetime.datetime)
+        # )
+        # mocked_datetime = datetime_patcher.start()
+        # mocked_datetime.today.return_value = datetime.datetime(2012, 6, 16)
+        # self.addCleanup(datetime_patcher.stop)
+
         user = User(first_name = 'reza', last_name = 'eivazzadeh', username = 'rezaeivaz')
         user.set_password('reza2000')
         user.save()

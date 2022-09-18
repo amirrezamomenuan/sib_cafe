@@ -1,7 +1,7 @@
 from datetime import date
 from rest_framework import serializers
 
-from core.models import Food, FoodItem, OrderItem
+from core.models import Food, FoodItem, FoodRate, OrderItem
 
 class FoodSerializer(serializers.ModelSerializer):
     class Meta:
@@ -51,3 +51,8 @@ class OrderItemDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
         fields = ['food_item', 'state', 'order_date', 'time_submited']
+
+class RateSubmittionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FoodRate
+        fields = ['food', 'rate']

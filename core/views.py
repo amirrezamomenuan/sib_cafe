@@ -19,6 +19,7 @@ from core.serializers import (CancelOrderSerializer,
                             FoodSerializer,
                             OrderItemSerializer,
                             OrderItemDetailSerializer,
+                            RateSubmittionSerializer,
                             )
 from core.models import Food, FoodItem, OrderItem
 
@@ -114,6 +115,17 @@ class OrderListView(ListAPIView):
     def get_queryset(self):
         return self.queryset.filter(user = self.request.user)
 
+
+class FoodRateView(APIView):
+    serializer_class = RateSubmittionSerializer
+    permission_classes = [IsAuthenticated, ]
+
+    def post(self, request):
+        serialized_data = self.serializer_class(data=request.data)
+        if serialized_data.is_valid():
+            print(serialized_data.initial_data)
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 
