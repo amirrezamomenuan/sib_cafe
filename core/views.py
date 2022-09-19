@@ -21,8 +21,8 @@ from core.serializers import (CancelOrderSerializer,
                             OrderItemDetailSerializer,
                             RateSubmittionSerializer,
                             )
-from core.models import Food, FoodItem, OrderItem
-
+from core.models import Food, FoodItem, FoodRate, OrderItem
+from core.utils import get_object_or_404_rest
 
 #finished menu
 class MenuView(ListAPIView):
@@ -55,9 +55,11 @@ class MenuItemView(APIView):
 
     def get(self, request):
         menu_item_id = request.query_params.get('menu_item_id')
-        fooditem = get_object_or_404(FoodItem, pk=menu_item_id)
-        serialized_data = self.serializer_class(fooditem)
-        return Response(data=serialized_data.data, status=status.HTTP_200_OK)
+        fooditem = get_object_or_404_rest(FoodItem, pk=menu_item_id)
+        if fooditem:
+            serialized_data = self.serializer_class(fooditem)
+            return Response(data=serialized_data.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 # finished order-submittion
 class CreateOrderView(APIView):
@@ -84,11 +86,13 @@ class CancelOrderView(APIView):
     def post(self, request):
         serialized_data = self.serializer_class(data=request.data)
         if serialized_data.is_valid():
-            order_item = get_object_or_404(OrderItem.objects.select_related('food_item', 'food_item__food'), pk = serialized_data.validated_data.get('order_item_id'))
-            if order_item.can_be_canceled(request.user):
-                order_item.cancel_order(request.user)
-                return Response(status=status.HTTP_200_OK)
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            order_item = get_object_or_404_rest(OrderItem.objects.select_related('food_item', 'food_item__food'), pk = serialized_data.validated_data.get('order_item_id'))
+            if order_item:
+                if order_item.can_be_canceled(request.user):
+                    order_item.cancel_order(request.user)
+                    return Response(status=status.HTTP_200_OK)
+                return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response(status=status.HTTP_404_NOT_FOUND)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 #finished order-detail
@@ -98,11 +102,13 @@ class OrderDetailView(APIView):
 
     def get(self, request):
         order_id = request.query_params.get('order_id')
-        order_item = get_object_or_404(OrderItem, pk=order_id, user=request.user)
-        serialized_data = self.serializer_class(order_item)
-        return Response(data=serialized_data.data, status=status.HTTP_200_OK)
+        order_item = get_object_or_404_rest(OrderItem, pk=order_id, user=request.user)
+        if order_item:
+            serialized_data = self.serializer_class(order_item)
+            return Response(data=serialized_data.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
-
+# finished order-list
 class OrderListView(ListAPIView):
     serializer_class = OrderItemSerializer
     permission_classes = [IsAuthenticated, ]
@@ -113,7 +119,7 @@ class OrderListView(ListAPIView):
     def get_queryset(self):
         return self.queryset.filter(user = self.request.user)
 
-
+# finished rate-submittion
 class FoodRateView(APIView):
     serializer_class = RateSubmittionSerializer
     permission_classes = [IsAuthenticated, ]
@@ -121,8 +127,11 @@ class FoodRateView(APIView):
     def post(self, request):
         serialized_data = self.serializer_class(data=request.data)
         if serialized_data.is_valid():
-            print(serialized_data.initial_data)
-            return Response(status=status.HTTP_200_OK)
+            food_rate_item = FoodRate(user=request.user, **serialized_data.validated_data)
+            if food_rate_item.can_be_submitted():
+                food_rate_item.save()
+                return Response(status=status.HTTP_201_CREATED)
+            return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 

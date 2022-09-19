@@ -4,9 +4,9 @@ from time import time
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
-from django.shortcuts import get_object_or_404
 
 from core.managers import FoodManager, OrderItemManager
+from core.utils import RedisConnectionHandler
 
 class Food(models.Model):
 
@@ -56,6 +56,7 @@ class FoodItem(models.Model):
     price = models.PositiveIntegerField(verbose_name=_("price"))
     creation_time = models.DateField(null=True, blank=True)
     weekday = models.SmallIntegerField(verbose_name= _("weekday"), choices= dayChoices.choices, default= dayChoices.EVERY_DAY.value)
+    _redis_manager = RedisConnectionHandler(settings.REDIS_CONNECTION)
     
     class Meta:
         ordering = ['-creation_time']
@@ -214,10 +215,25 @@ class FoodRate(models.Model):
     food = models.ForeignKey(to= Food, on_delete= models.CASCADE)
     date_rated = models.DateField(verbose_name=_("date rated"), auto_now_add=True)
     rate = models.PositiveSmallIntegerField(verbose_name=_("rate"), choices=rateChoices.choices)
+    _redis_manager = RedisConnectionHandler(settings.REDIS_CONNECTION)
 
     class Meta:
         ordering = ['-date_rated',]
-        unique_together = ['user', 'food', 'date_rated', ]
         verbose_name = _("rate")
         verbose_name_plural = _('food rates')
-      
+    
+    def __user_has_ordered_food_today(self):
+        return self.user.user_orders.filter(food_item__food=self.food, order_date=date.today()).exists()
+
+    def __user_has_submitted_rate_already(self) -> None:
+        return self.__class__.objects.filter(user=self.user, food=self.food, date_rated=date.today()).exists()
+    
+    def can_be_submitted(self) -> bool:
+        has_submitted = self.__user_has_submitted_rate_already()
+        if has_submitted:
+            return False
+        return self.__user_has_ordered_food_today()
+
+    def save(self, *args, **kwargs) -> None:
+        self._redis_manager.insert_rate(self.food.id, self.rate)
+        return super().save(*args, **kwargs)

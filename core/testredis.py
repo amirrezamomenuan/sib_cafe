@@ -19,3 +19,8 @@ print(r1)
 r2 = rconnection.get('10').decode('utf-8')
 print(type(r2))
 print(r2)
+
+rconnection.set('food:10', 4.316006108611031)
+print(rconnection.get('food:10'))
+
+rconnection
