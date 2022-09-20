@@ -61,23 +61,17 @@ class FoodItem(models.Model):
     class Meta:
         ordering = ['-creation_time']
 
-    def food_is_sold_out(self) -> bool:
+    def food_is_sold_out(self, order_date:date) -> bool:
         if self.amount is None:
             return False
-        try:
-            ordered_food_count = settings.REDIS_CONNECTION.get(f'{self.pk}')
-            if ordered_food_count is None:
-                raise Exception('key for order_item.pk is not provided')
-            ordered_food_count = int(ordered_food_count.decode('utf-8'))
-            
-        except Exception as e:
-            today = date.today()
-            ordered_food_count = self.food_orders.filter(order_date=today).count()
-            try:
-                settings.REDIS_CONNECTION.set(name=f'{self.pk}', value=ordered_food_count)
-            except:
-                pass
 
+        ordered_food_count = self._redis_manager.get_food_order_count(self.pk, order_date)
+        if ordered_food_count is None:
+            ordered_food_count = self.food_orders.filter(order_date=order_date).count()
+            self._redis_manager.set_food_order_count(self.pk, order_date, ordered_food_count)
+        else:
+            ordered_food_count = int(ordered_food_count.decode('utf-8'))
+        
         return self.amount <= ordered_food_count
 
     def __str__(self) -> str:
@@ -103,6 +97,7 @@ class OrderItem(models.Model):
     last_modified = models.DateTimeField(verbose_name=_("modification time"), auto_now=True)
     state = models.SmallIntegerField(verbose_name=_("state"), choices=stateChoices.choices, default=stateChoices.SUBMITED.value)
     last_modifier = models.SmallIntegerField(verbose_name=_("last modifier"), choices=modifierChoices.choices, default=modifierChoices.ADMIN.value)
+    _redis_manager = RedisConnectionHandler(settings.REDIS_CONNECTION)
 
     class Meta:
         ordering = ['-order_date', '-time_submited']
@@ -158,7 +153,7 @@ class OrderItem(models.Model):
         user_can_order = self.__user_can_order_item()
         if not user_can_order:
             return False
-        return user_can_order and not self.food_item.food_is_sold_out()
+        return user_can_order and not self.food_item.food_is_sold_out(self.order_date)
 
 
     def __todays_order_is_getting_canceled(self) -> bool:
@@ -196,8 +191,13 @@ class OrderItem(models.Model):
         else:
             self.last_modifier = self.modifierChoices.USER.value
         self.state = self.stateChoices.CANCELED.value
+        self._redis_manager.update_food_order_count(self.food_item.pk, self.order_date, canceling_order=True)
         self.save()
-    
+
+    def submit(self):
+        self._redis_manager.update_food_order_count(self.food_item.pk, self.order_date)
+        self.save()
+
     def __str__(self) -> str:
         return f"{self.food_item.food.name}"
 

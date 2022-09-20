@@ -15,15 +15,6 @@ User = get_user_model()
 
 class TestOrderSubmittion(APITestCase):
     def setUp(self) -> None:
-        # datetime_patcher = mock.patch.object(
-        #     my_module.datetime, 'datetime', 
-
-        #     mock.Mock(wraps=datetime.datetime)
-        # )
-        # mocked_datetime = datetime_patcher.start()
-        # mocked_datetime.today.return_value = datetime.datetime(2012, 6, 16)
-        # self.addCleanup(datetime_patcher.stop)
-
         user = User(first_name = 'reza', last_name = 'eivazzadeh', username = 'rezaeivaz')
         user.set_password('reza2000')
         user.save()
@@ -163,7 +154,7 @@ class TestOrderSubmittion(APITestCase):
     def test_ordering_breakfast_that_is_sold_out(self, mock_datetime, mock_date):
         mock_datetime.now.return_value.hour = 7
         mock_date.today.return_value = date(2022, 9, 15)
-        settings.REDIS_CONNECTION.set(name='12', value= 15)
+        settings.REDIS_CONNECTION.set(name=f'12:{date(2022, 9, 15).strftime("%Y/%m/%d")}', value= 15)
     
         data = {"food_item": 12, "order_date": "2022-09-15"}
         response = self.client.post(path=self.path, data=data)
@@ -174,7 +165,7 @@ class TestOrderSubmittion(APITestCase):
     def test_ordering_lunch_that_is_sold_out(self, mock_datetime, mock_date):
         mock_datetime.now.return_value.hour = 17
         mock_date.today.return_value = date(2022, 9, 11)
-        settings.REDIS_CONNECTION.set(name='5', value= 10)
+        settings.REDIS_CONNECTION.set(name=f'5:{date(2022, 9, 12).strftime("%Y/%m/%d")}', value= 10)
 
         data = {"food_item": 5, "order_date": "2022-09-12"}
         response = self.client.post(path=self.path, data=data)

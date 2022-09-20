@@ -71,7 +71,7 @@ class CreateOrderView(APIView):
         if serialized_data.is_valid():
             order_item = OrderItem(user = request.user, **serialized_data.validated_data)
             if order_item.can_be_submitted():
-                order_item.save()
+                order_item.submit()
                 return Response(status=status.HTTP_201_CREATED)
             else:
                 return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
