@@ -5,6 +5,8 @@ from datetime import timedelta
 import redis
 import os
 
+from celery.schedules import crontab
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -23,6 +25,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'django_celery_beat',
 
     'core',
     'accounts',
@@ -155,3 +158,12 @@ APPETIZER_TIME_LIMIT = 18
 LUNCH_CANCEL_TIME_LIMIT = 11
 BREAKFAST_CANCEL_TIME_LIMIT = 10
 APPETIZER_CANCEL_TIME_LIMIT = 18
+
+CELERY_BROKER_URL = "redis://localhost:6379"
+CELERY_BEAT_SCHEDULE = {
+    "scheduled_task" : {
+        'task' : "core.tasks.update_food_rates_periodically",
+        'schedule' : crontab(minute='*/20'),
+        "args" : (),
+    }
+}

@@ -57,3 +57,7 @@ class RedisConnectionHandler:
             return self.__connection.set(name=self.format_key(food_item_id, order_date), value=value)
         except:
             return None
+    
+    def upgrade_leader_board(self):
+        # failed to implement because some python3.redis library commands, were unknown for my redisdb : zmscore, ...
+        pass
