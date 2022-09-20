@@ -1,8 +1,7 @@
-from datetime import date, datetime
+from datetime import date
 from unittest import mock
 
 from django.urls import reverse
-from django.db.models import Q
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
@@ -21,7 +20,6 @@ class TestOrderSubmittion(APITestCase):
         self.user = user
         
         response = self.client.post(path = reverse('login'), data = {'username':'rezaeivaz', 'password': "reza2000"})
-        self.refresh_token = response.json().get('refresh')
         self.access_token = response.json().get('access')
         self.client = APIClient()
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.access_token}')

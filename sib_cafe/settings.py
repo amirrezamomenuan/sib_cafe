@@ -147,6 +147,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.User'
 
+# TODO: change settings to read from .env
 FOOD_PAGE_SIZE = 10
 MENU_PAGE_SIZE = 10
 DEFAULT_PAGE_SIZE = 10

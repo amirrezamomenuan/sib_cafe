@@ -44,12 +44,6 @@ class TestRateSubmittion(APITestCase):
             description = 'kabab koobideh 1 sikh',
             category = Food.foodCategories.LUNCH.value,
         )
-        soda_can = Food.objects.create(
-            id = 2,
-            name = 'soda_can',
-            description = '330 ml canned soda',
-            category = Food.foodCategories.APPETIZER.value,
-        )
         fries = Food.objects.create(
             id = 3,
             name = 'fries',
@@ -64,11 +58,12 @@ class TestRateSubmittion(APITestCase):
             category = Food.foodCategories.BREAKFAST.value,
         )
 
-
+        # TODO: bulk create
         kabab_item = FoodItem.objects.create(id = 1, food=kabab, amount=3, price=150000, weekday=FoodItem.dayChoices.SATURDAY.value)
         fries_item = FoodItem.objects.create(id = 3, food=fries, price=10000, weekday=FoodItem.dayChoices.EVERY_DAY.value)
         omelette_item = FoodItem.objects.create(id = 5, food=omelette, amount=15, price=18000, weekday=FoodItem.dayChoices.EVERY_DAY.value)
 
+        # TODO: bulk create
         OrderItem.objects.create(id = 1, food_item = kabab_item, user= user, order_date = date(2022, 9, 17), state = OrderItem.stateChoices.PAYED.value)
         OrderItem.objects.create(id = 2, food_item = kabab_item, user= user, order_date = date(2022, 9, 18), state = OrderItem.stateChoices.CANCELED.value)
         OrderItem.objects.create(id = 3, food_item = fries_item, user= user2, order_date = date(2022, 7, 4), state = OrderItem.stateChoices.SUBMITED.value)

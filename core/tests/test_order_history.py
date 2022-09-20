@@ -4,7 +4,6 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from django.conf import settings
 
 from core.models import Food, FoodItem, OrderItem
 
@@ -23,13 +22,11 @@ class TestCancelOrder(APITestCase):
         self.user2 = user2
         
         response = self.client.post(path = reverse('login'), data = {'username':'spacexCTO', 'password': "elon1971"})
-        self.refresh_token = response.json().get('refresh')
         self.access_token = response.json().get('access')
         self.client = APIClient()
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.access_token}')
 
         response = self.client.post(path = reverse('login'), data = {'username':'EivazIndustriesCTO', 'password': "robotdaddy1378"})
-        self.refresh_token2 = response.json().get('refresh')
         self.access_token2 = response.json().get('access')
         self.client2 = APIClient()
         self.client2.credentials(HTTP_AUTHORIZATION=f'Bearer {self.access_token2}')
@@ -59,22 +56,23 @@ class TestCancelOrder(APITestCase):
             category = Food.foodCategories.BREAKFAST.value,
         )
 
-
+        # TODO: bulk create
         kabab_item = FoodItem.objects.create(id = 1, food=kabab, amount=3, price=150000, weekday=FoodItem.dayChoices.SATURDAY.value)
         fries_item = FoodItem.objects.create(id = 3, food=fries, price=10000, weekday=FoodItem.dayChoices.EVERY_DAY.value)
         omelette_item = FoodItem.objects.create(id = 5, food=omelette, amount=15, price=18000, weekday=FoodItem.dayChoices.EVERY_DAY.value)
         soda_item = FoodItem.objects.create(id = 6, food=soda_can, price=12000, weekday=FoodItem.dayChoices.EVERY_DAY.value)
-
-        o1 = OrderItem.objects.create(id = 1, food_item = kabab_item, user= user, order_date = date(2022, 9, 17), state = OrderItem.stateChoices.PAYED.value)
-        o2 = OrderItem.objects.create(id = 2, food_item = kabab_item, user= user, order_date = date(2022, 9, 18), state = OrderItem.stateChoices.CANCELED.value)
-        o3 = OrderItem.objects.create(id = 3, food_item = omelette_item, user= user, order_date = date(2022, 8, 22), state = OrderItem.stateChoices.SERVED.value)
-        o4 = OrderItem.objects.create(id = 4, food_item = kabab_item, user= user2, order_date = date(2022, 9, 14), state = OrderItem.stateChoices.SUBMITED.value)
-        o5 = OrderItem.objects.create(id = 5, food_item = omelette_item, user= user2, order_date = date(2022, 3, 1), state = OrderItem.stateChoices.SUBMITED.value)
-        o6 = OrderItem.objects.create(id = 6, food_item = fries_item, user= user, order_date = date(2022, 3, 29), state = OrderItem.stateChoices.SUBMITED.value)
-        o7 = OrderItem.objects.create(id = 7, food_item = soda_item, user= user, order_date = date(2022, 12, 27), state = OrderItem.stateChoices.SUBMITED.value)
-        o8 = OrderItem.objects.create(id = 8, food_item = soda_item, user= user, order_date = date(2022, 11, 29), state = OrderItem.stateChoices.PAYED.value)
-        o9 = OrderItem.objects.create(id = 9, food_item = fries_item, user= user, order_date = date(2021, 2, 2), state = OrderItem.stateChoices.SUBMITED.value)
-        o10 = OrderItem.objects.create(id = 10, food_item = kabab_item, user= user, order_date = date(2022, 7, 19), state = OrderItem.stateChoices.SERVED.value)
+        
+        # TODO: bulk create
+        OrderItem.objects.create(id = 1, food_item = kabab_item, user= user, order_date = date(2022, 9, 17), state = OrderItem.stateChoices.PAYED.value)
+        OrderItem.objects.create(id = 2, food_item = kabab_item, user= user, order_date = date(2022, 9, 18), state = OrderItem.stateChoices.CANCELED.value)
+        OrderItem.objects.create(id = 3, food_item = omelette_item, user= user, order_date = date(2022, 8, 22), state = OrderItem.stateChoices.SERVED.value)
+        OrderItem.objects.create(id = 4, food_item = kabab_item, user= user2, order_date = date(2022, 9, 14), state = OrderItem.stateChoices.SUBMITED.value)
+        OrderItem.objects.create(id = 5, food_item = omelette_item, user= user2, order_date = date(2022, 3, 1), state = OrderItem.stateChoices.SUBMITED.value)
+        OrderItem.objects.create(id = 6, food_item = fries_item, user= user, order_date = date(2022, 3, 29), state = OrderItem.stateChoices.SUBMITED.value)
+        OrderItem.objects.create(id = 7, food_item = soda_item, user= user, order_date = date(2022, 12, 27), state = OrderItem.stateChoices.SUBMITED.value)
+        OrderItem.objects.create(id = 8, food_item = soda_item, user= user, order_date = date(2022, 11, 29), state = OrderItem.stateChoices.PAYED.value)
+        OrderItem.objects.create(id = 9, food_item = fries_item, user= user, order_date = date(2021, 2, 2), state = OrderItem.stateChoices.SUBMITED.value)
+        OrderItem.objects.create(id = 10, food_item = kabab_item, user= user, order_date = date(2022, 7, 19), state = OrderItem.stateChoices.SERVED.value)
 
     def test_without_providing_authentication_credentials(self):
         client = APIClient()

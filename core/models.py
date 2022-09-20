@@ -1,11 +1,9 @@
 from datetime import date, datetime
-from time import time
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
-from core.managers import FoodManager, OrderItemManager
 from core.utils import RedisConnectionHandler
 
 class Food(models.Model):
@@ -21,7 +19,6 @@ class Food(models.Model):
     image = models.ImageField(verbose_name=_('image'), upload_to ='uploads/food_images', default='uploads/food_images/default.jpg')
     creation_time = models.DateTimeField(auto_now_add=True)
     modification_time = models.DateTimeField(auto_now=True)
-    objects = FoodManager()
 
     class Meta:
         db_table = "core_food"
@@ -29,14 +26,6 @@ class Food(models.Model):
         verbose_name_plural = _('foods')
         ordering = ["-creation_time",]
     
-    @property
-    def rate(self):
-        return 5 #TODO: change this to a function that reads data from redis and returns it
-       
-    @rate.setter
-    def rate(self) -> None:
-        pass #TODO: change this to a function that updates new data to redis
-
     def __str__(self) -> str:
         return f"{self.category} : {self.name}"
 

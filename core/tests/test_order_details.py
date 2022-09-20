@@ -4,7 +4,6 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from django.conf import settings
 
 from core.models import Food, FoodItem, OrderItem
 
@@ -23,13 +22,11 @@ class TestCancelOrder(APITestCase):
         self.user2 = user2
         
         response = self.client.post(path = reverse('login'), data = {'username':'spacexCTO', 'password': "elon1971"})
-        self.refresh_token = response.json().get('refresh')
         self.access_token = response.json().get('access')
         self.client = APIClient()
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.access_token}')
 
         response = self.client.post(path = reverse('login'), data = {'username':'EivazIndustriesCTO', 'password': "robotdaddy1378"})
-        self.refresh_token2 = response.json().get('refresh')
         self.access_token2 = response.json().get('access')
         self.client2 = APIClient()
         self.client2.credentials(HTTP_AUTHORIZATION=f'Bearer {self.access_token2}')
@@ -42,17 +39,6 @@ class TestCancelOrder(APITestCase):
             description = 'kabab koobideh 1 sikh',
             category = Food.foodCategories.LUNCH.value,
         )
-        soda_can = Food.objects.create(
-            name = 'soda_can',
-            description = '330 ml canned soda',
-            category = Food.foodCategories.APPETIZER.value,
-        )
-        fries = Food.objects.create(
-            name = 'fries',
-            description = 'sibzamazni sorkh kardeh',
-            category = Food.foodCategories.APPETIZER.value,
-        )
-
         omelette = Food.objects.create(
             name = 'omelette',
             description = 'omlet ghahvekhoone-ie',
@@ -61,7 +47,6 @@ class TestCancelOrder(APITestCase):
 
 
         kabab_item = FoodItem.objects.create(id = 1, food=kabab, amount=3, price=150000, weekday=FoodItem.dayChoices.SATURDAY.value)
-        fries_item = FoodItem.objects.create(id = 3, food=fries, price=10000, weekday=FoodItem.dayChoices.EVERY_DAY.value)
         omelette_item = FoodItem.objects.create(id = 5, food=omelette, amount=15, price=18000, weekday=FoodItem.dayChoices.EVERY_DAY.value)
 
         OrderItem.objects.create(id = 1, food_item = kabab_item, user= user, order_date = date(2022, 9, 17), state = OrderItem.stateChoices.PAYED.value)

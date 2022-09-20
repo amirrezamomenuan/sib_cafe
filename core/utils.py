@@ -1,5 +1,4 @@
 from datetime import date
-from django.db.models import QuerySet,Model
 
 def _get_queryset(klass):
     if hasattr(klass, '_default_manager'):

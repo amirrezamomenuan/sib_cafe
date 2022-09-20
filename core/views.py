@@ -1,11 +1,9 @@
 from datetime import date
-from django.shortcuts import get_object_or_404
-from django.db import connection
 
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q
@@ -15,16 +13,14 @@ from core.serializers import (CancelOrderSerializer,
                             CreateOrderSerializer,
                             FoodItemDetailSerializer,
                             FoodItemserializer,
-                            FoodListSerializer,
-                            FoodSerializer,
                             OrderItemSerializer,
                             OrderItemDetailSerializer,
                             RateSubmittionSerializer,
                             )
-from core.models import Food, FoodItem, FoodRate, OrderItem
+from core.models import FoodItem, FoodRate, OrderItem
 from core.utils import get_object_or_404_rest
 
-#finished menu
+
 class MenuView(ListAPIView):
     serializer_class = FoodItemserializer
     permission_classes = [AllowAny, ]
@@ -48,7 +44,6 @@ class MenuView(ListAPIView):
         return queryset.order_by(order_parameter)
 
 
-# finished menuitem
 class MenuItemView(APIView):
     serializer_class = FoodItemDetailSerializer
     permission_classes = [AllowAny, ]
@@ -61,7 +56,7 @@ class MenuItemView(APIView):
             return Response(data=serialized_data.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-# finished order-submittion
+
 class CreateOrderView(APIView):
     serializer_class = CreateOrderSerializer
     permission_classes = [IsAuthenticated, ]
@@ -78,7 +73,7 @@ class CreateOrderView(APIView):
         
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-# finished order-cancelation
+
 class CancelOrderView(APIView):
     serializer_class = CancelOrderSerializer
     permission_classes = [IsAuthenticated, ]
@@ -95,7 +90,7 @@ class CancelOrderView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-#finished order-detail
+
 class OrderDetailView(APIView):
     serializer_class = OrderItemDetailSerializer
     permission_classes = [IsAuthenticated, ]
@@ -108,7 +103,7 @@ class OrderDetailView(APIView):
             return Response(data=serialized_data.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-# finished order-list
+
 class OrderListView(ListAPIView):
     serializer_class = OrderItemSerializer
     permission_classes = [IsAuthenticated, ]
@@ -119,7 +114,7 @@ class OrderListView(ListAPIView):
     def get_queryset(self):
         return self.queryset.filter(user = self.request.user)
 
-# finished rate-submittion
+
 class FoodRateView(APIView):
     serializer_class = RateSubmittionSerializer
     permission_classes = [IsAuthenticated, ]
@@ -135,43 +130,6 @@ class FoodRateView(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
-
-
-
-
-
-
-class FoodView(APIView):
-    serializer_class = FoodSerializer
-    permission_classes = []
-
-    def get(self, request):
-        food_id = request.GET.get('food_id')
-        offset = int(request.GET.get("offset", 0))
-        limit = int(request.GET.get("limit", 100))
-        if food_id is not None:
-            food = get_object_or_404(Food, pk = food_id)
-            serialized_data = self.serializer_class(food)
-        else:
-            # foods = Food.objects.get_page(page)
-            foods = Food.objects.all()[offset: limit + offset]
-            if foods.count() == 0:
-                return Response(data = {"message": "food does not exist with your limit and offset"}, status = 416)
-            serialized_data = self.serializer_class(foods, many = True)
-        return Response(data = serialized_data.data, status=status.HTTP_200_OK)   
-
-
-class FoodListView(APIView):
-    serializer_class = FoodSerializer
-    permission_classes = [IsAuthenticated,]
-
-    def get(self, request):
-        page = int(request.GET.get("page", 1))
-        foods = Food.objects.get_page(page)
-        serialized_data = self.serializer_class(foods, many = True)
-        return Response(data = serialized_data.data, status=status.HTTP_200_OK)    
 
 # class FoodRateView(APIView):
 #     serializer_class = None

@@ -1,12 +1,10 @@
-from datetime import date, datetime
+from datetime import date
 from unittest import mock
 
 from django.urls import reverse
-from django.db.models import Q
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from django.conf import settings
 
 from core.models import Food, FoodItem, OrderItem
 
