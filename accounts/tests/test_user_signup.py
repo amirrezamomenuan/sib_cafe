@@ -7,7 +7,7 @@ from rest_framework import status
 
 User = get_user_model()
 
-class SignUpTest(TestCase):
+class TestSignUp(TestCase):
     def setUp(self) -> None:
         user = User(first_name = 'nikola', last_name = 'tesla', username = 7777777)
         user.set_password('nikola1943tesla')

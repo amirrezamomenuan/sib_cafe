@@ -35,7 +35,7 @@ class SignupSerializer(serializers.Serializer):
         return value
     
     def validate_username(self, value):
-        #change this to read from .env or settings
+        #TODO: change this to read from .env or settings
         if len(value) not in range(5, 15):
             raise serializers.ValidationError('username cannot be too long or too short')
         return value
