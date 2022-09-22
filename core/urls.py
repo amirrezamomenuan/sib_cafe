@@ -1,5 +1,5 @@
 from django.urls import path
-from core.views import CancelOrderView, CreateOrderView, FoodRateView, MenuItemView, MenuView, OrderDetailView, OrderListView
+from core.views import CancelOrderView, CreateOrderView, FoodRateView, LeaderBoardView, MenuItemView, MenuView, OrderDetailView, OrderListView
 
 
 urlpatterns = [
@@ -10,4 +10,5 @@ urlpatterns = [
     path('order/detail/', OrderDetailView.as_view(), name='order-detail'),
     path('order/all/', OrderListView.as_view(), name='order-list'),
     path('rate/', FoodRateView.as_view(), name='rate-submittion'),
+    path('leaderboard/', LeaderBoardView.as_view(), name='leaderboard-view'),
 ]

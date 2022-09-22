@@ -1,5 +1,3 @@
-import os
-import json
 from datetime import date
 
 from django.conf import settings
@@ -108,8 +106,9 @@ class LeaderBoardRedisClient(RedisClient):
             return
 
     def get_leader_board(self) -> dict:
-        results = self.redis_client.zrevrangebyscore(name=self.rate_set_key, min=0, max=5)
+        results = self.redis_client.zrevrangebyscore(name=self.rate_set_key, min=0, max=10, withscores=True)
         dict_result = {}
         for r in results:
-            dict_result[r[0].decode()] = r[1]
+            # should have replaced with formating but i dont remember the exact syntax
+            dict_result[r[0]] = float(str(r[1]).split('.')[0] + '.' +str(r[1]).split('.')[1][:2])
         return dict_result
