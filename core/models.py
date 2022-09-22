@@ -4,7 +4,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 
-from core.utils import RedisConnectionHandler
+from core.utils import LeaderBoardRedisClient
 
 class Food(models.Model):
 
@@ -45,7 +45,7 @@ class FoodItem(models.Model):
     price = models.PositiveIntegerField(verbose_name=_("price"))
     creation_time = models.DateField(null=True, blank=True)
     weekday = models.SmallIntegerField(verbose_name= _("weekday"), choices= dayChoices.choices, default= dayChoices.EVERY_DAY.value)
-    _redis_manager = RedisConnectionHandler(settings.REDIS_CONNECTION)
+    _redis_manager = LeaderBoardRedisClient()
     
     class Meta:
         ordering = ['-creation_time']
@@ -59,7 +59,7 @@ class FoodItem(models.Model):
             ordered_food_count = self.food_orders.filter(order_date=order_date).count()
             self._redis_manager.set_food_order_count(self.pk, order_date, ordered_food_count)
         else:
-            ordered_food_count = int(ordered_food_count.decode('utf-8'))
+            ordered_food_count = int(ordered_food_count)
         
         return self.amount <= ordered_food_count
 
@@ -86,7 +86,7 @@ class OrderItem(models.Model):
     last_modified = models.DateTimeField(verbose_name=_("modification time"), auto_now=True)
     state = models.SmallIntegerField(verbose_name=_("state"), choices=stateChoices.choices, default=stateChoices.SUBMITED.value)
     last_modifier = models.SmallIntegerField(verbose_name=_("last modifier"), choices=modifierChoices.choices, default=modifierChoices.ADMIN.value)
-    _redis_manager = RedisConnectionHandler(settings.REDIS_CONNECTION)
+    _redis_manager = LeaderBoardRedisClient()
 
     class Meta:
         ordering = ['-order_date', '-time_submited']
@@ -204,7 +204,7 @@ class FoodRate(models.Model):
     food = models.ForeignKey(to= Food, on_delete= models.CASCADE)
     date_rated = models.DateField(verbose_name=_("date rated"), auto_now_add=True)
     rate = models.PositiveSmallIntegerField(verbose_name=_("rate"), choices=rateChoices.choices)
-    _redis_manager = RedisConnectionHandler(settings.REDIS_CONNECTION)
+    _redis_manager = LeaderBoardRedisClient()
 
     class Meta:
         ordering = ['-date_rated',]

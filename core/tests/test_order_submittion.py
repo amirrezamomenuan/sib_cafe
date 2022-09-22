@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from django.conf import settings
+from core.utils import LeaderBoardRedisClient
 
 from core.models import Food, FoodItem 
 
@@ -26,7 +26,8 @@ class TestOrderSubmittion(APITestCase):
 
         self.path = reverse('order-submittion')
         
-        settings.REDIS_CONNECTION.flushdb()
+        self.redis_connection = LeaderBoardRedisClient()
+        self.redis_connection.redis_client.flushdb()
 
         kabab = Food.objects.create(
             name = 'kabab',
@@ -152,8 +153,7 @@ class TestOrderSubmittion(APITestCase):
     def test_ordering_breakfast_that_is_sold_out(self, mock_datetime, mock_date):
         mock_datetime.now.return_value.hour = 7
         mock_date.today.return_value = date(2022, 9, 15)
-        settings.REDIS_CONNECTION.set(name=f'12:{date(2022, 9, 15).strftime("%Y/%m/%d")}', value= 15)
-    
+        self.redis_connection.set_food_order_count(food_item_id=12, order_date=date(2022, 9, 15), value=15)
         data = {"food_item": 12, "order_date": "2022-09-15"}
         response = self.client.post(path=self.path, data=data)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
@@ -163,7 +163,7 @@ class TestOrderSubmittion(APITestCase):
     def test_ordering_lunch_that_is_sold_out(self, mock_datetime, mock_date):
         mock_datetime.now.return_value.hour = 17
         mock_date.today.return_value = date(2022, 9, 11)
-        settings.REDIS_CONNECTION.set(name=f'5:{date(2022, 9, 12).strftime("%Y/%m/%d")}', value= 10)
+        self.redis_connection.set_food_order_count(food_item_id=5, order_date=date(2022, 9, 12), value=10)
 
         data = {"food_item": 5, "order_date": "2022-09-12"}
         response = self.client.post(path=self.path, data=data)

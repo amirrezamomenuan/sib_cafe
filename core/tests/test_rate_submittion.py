@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from django.conf import settings
 
-from core.models import Food, FoodItem, FoodRate, OrderItem
+from core.models import Food, FoodItem, OrderItem
 
 User = get_user_model()
 
@@ -69,13 +69,13 @@ class TestRateSubmittion(APITestCase):
         OrderItem.objects.create(id = 3, food_item = fries_item, user= user2, order_date = date(2022, 7, 4), state = OrderItem.stateChoices.SUBMITED.value)
         OrderItem.objects.create(id = 5, food_item = omelette_item, user= user, order_date = date.today(), state = OrderItem.stateChoices.SUBMITED.value)
 
-        settings.REDIS_CONNECTION.zincrby(name= 'food-rate-total', amount=145, value=3)
-        settings.REDIS_CONNECTION.zincrby(name= 'food-rate-total', amount=173, value=1)
-        settings.REDIS_CONNECTION.zincrby(name= 'food-rate-total', amount=2000, value=4)
+        settings.REDIS_CONNECTION.zincrby(name= f"{settings.REDIS_PREFIX}:total", amount=145, value=3)
+        settings.REDIS_CONNECTION.zincrby(name= f"{settings.REDIS_PREFIX}:total", amount=173, value=1)
+        settings.REDIS_CONNECTION.zincrby(name= f"{settings.REDIS_PREFIX}:total", amount=2000, value=4)
 
-        settings.REDIS_CONNECTION.zincrby(name= 'food-rate-counter', amount=23, value=3)
-        settings.REDIS_CONNECTION.zincrby(name= 'food-rate-counter', amount=10, value=1)
-        settings.REDIS_CONNECTION.zincrby(name= 'food-rate-counter', amount=450, value=4)
+        settings.REDIS_CONNECTION.zincrby(name= f'{settings.REDIS_PREFIX}:counter', amount=23, value=3)
+        settings.REDIS_CONNECTION.zincrby(name= f'{settings.REDIS_PREFIX}:counter', amount=10, value=1)
+        settings.REDIS_CONNECTION.zincrby(name= f'{settings.REDIS_PREFIX}:counter', amount=450, value=4)
     
     def test_without_providing_authentication_credentials(self):
         client = APIClient()
@@ -99,8 +99,8 @@ class TestRateSubmittion(APITestCase):
     def test_rating_for_food_that_was_not_ordered_by_this_user(self):
         data = {'food':3, 'rate':4}
         response = self.client.post(path=self.path, data=data)
-        redis_food_total = settings.REDIS_CONNECTION.zscore(name= 'food-rate-total', value=3)
-        redis_food_count = settings.REDIS_CONNECTION.zscore(name= 'food-rate-counter', value=3)
+        redis_food_total = settings.REDIS_CONNECTION.zscore(name= f"{settings.REDIS_PREFIX}:total", value=3)
+        redis_food_count = settings.REDIS_CONNECTION.zscore(name= f'{settings.REDIS_PREFIX}:counter', value=3)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertEqual(145, redis_food_total)
         self.assertEqual(23, redis_food_count)
@@ -110,8 +110,8 @@ class TestRateSubmittion(APITestCase):
         mock_date.today.return_value = date(2022, 9, 17)
         data = {'food':1, 'rate':4}
         response = self.client.post(path=self.path, data=data)
-        redis_food_total = settings.REDIS_CONNECTION.zscore(name= 'food-rate-total', value=1)
-        redis_food_count = settings.REDIS_CONNECTION.zscore(name= 'food-rate-counter', value=1)
+        redis_food_total = settings.REDIS_CONNECTION.zscore(name= f"{settings.REDIS_PREFIX}:total", value=1)
+        redis_food_count = settings.REDIS_CONNECTION.zscore(name= f'{settings.REDIS_PREFIX}:counter', value=1)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(177, redis_food_total)
         self.assertEqual(11, redis_food_count)
@@ -121,8 +121,8 @@ class TestRateSubmittion(APITestCase):
         mock_date.today.return_value = date(2022, 9, 19)
         data = {'food':1, 'rate':1}
         response = self.client.post(path=self.path, data=data)
-        redis_food_total = settings.REDIS_CONNECTION.zscore(name= 'food-rate-total', value=1)
-        redis_food_count = settings.REDIS_CONNECTION.zscore(name= 'food-rate-counter', value=1)
+        redis_food_total = settings.REDIS_CONNECTION.zscore(name= f"{settings.REDIS_PREFIX}:total", value=1)
+        redis_food_count = settings.REDIS_CONNECTION.zscore(name= f'{settings.REDIS_PREFIX}:counter', value=1)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertEqual(173, redis_food_total)
         self.assertEqual(10, redis_food_count)
@@ -130,16 +130,16 @@ class TestRateSubmittion(APITestCase):
     def test_rating_for_food_when_already_rated(self):
         data = {'food':4, 'rate':4}
         response = self.client.post(path=self.path, data=data)
-        redis_food_total = settings.REDIS_CONNECTION.zscore(name= 'food-rate-total', value=4)
-        redis_food_count = settings.REDIS_CONNECTION.zscore(name= 'food-rate-counter', value=4)
+        redis_food_total = settings.REDIS_CONNECTION.zscore(name= f"{settings.REDIS_PREFIX}:total", value=4)
+        redis_food_count = settings.REDIS_CONNECTION.zscore(name= f'{settings.REDIS_PREFIX}:counter', value=4)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(2004, redis_food_total)
         self.assertEqual(451, redis_food_count)
 
         data = {'food':4, 'rate':4}
         response = self.client.post(path=self.path, data=data)
-        redis_food_total = settings.REDIS_CONNECTION.zscore(name= 'food-rate-total', value=4)
-        redis_food_count = settings.REDIS_CONNECTION.zscore(name= 'food-rate-counter', value=4)
+        redis_food_total = settings.REDIS_CONNECTION.zscore(name= f"{settings.REDIS_PREFIX}:total", value=4)
+        redis_food_count = settings.REDIS_CONNECTION.zscore(name= f'{settings.REDIS_PREFIX}:counter', value=4)
         self.assertEqual(response.status_code, status.HTTP_406_NOT_ACCEPTABLE)
         self.assertEqual(2004, redis_food_total)
         self.assertEqual(451, redis_food_count)

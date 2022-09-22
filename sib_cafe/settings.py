@@ -72,11 +72,19 @@ DATABASES = {
     }
 }
 
+# redis_connection is only used for testing and should have a different db number
 REDIS_CONNECTION = redis.Redis(
     host=config('REDIS_DB_HOST'),
     port=config('REDIS_DB_PORT', cast=int, default=6379),
-    db=config('REDIS_DB', cast=int, default=0),
+    db=config('REDIS_DB_TEST', cast=int, default=1),
 )
+
+REDIS_HOST=config('REDIS_DB_HOST')
+REDIS_PORT=config('REDIS_DB_PORT', cast=int, default=6379)
+REDIS_DB=config('REDIS_DB', cast=int, default=1)
+REDIS_URL = config('REDIS_URL')
+REDIS_PREFIX = 'leaderboard'
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {

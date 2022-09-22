@@ -130,7 +130,9 @@ class FoodRateView(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-
+class LeaderBoardView(APIView):
+    def get(self, request):
+        pass
 # class FoodRateView(APIView):
 #     serializer_class = None
 #     permission_classes = [IsAuthenticated, ]
