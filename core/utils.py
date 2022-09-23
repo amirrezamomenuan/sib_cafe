@@ -2,7 +2,7 @@ from datetime import date
 
 from django.conf import settings
 from redis import Redis, RedisError, ConnectionError
-from django.db.models import Model
+from django.db.models import Model, Count, Sum
 
 def _get_queryset(klass):
     if hasattr(klass, '_default_manager'):
@@ -27,7 +27,6 @@ class RedisClient:
     def __init__(self) -> None:
         try:
             if settings.REDIS_URL:
-                print('found url '*5)
                 self.redis_client = Redis.from_url(
                     url=settings.REDIS_URL,
                     decode_responses=True
@@ -84,8 +83,16 @@ class LeaderBoardRedisClient(RedisClient):
         except:
             return False
     
+    def bulk_insert_rate(self, rate_totals:dict, rate_counts:dict):
+        try:
+            self.redis_client.zadd(name=self.total_rate_key, mapping=rate_totals)
+            self.redis_client.zadd(name=self.rate_counter_key, mapping=rate_counts)
+            return True
+        except:
+            return False
+    
     # TODO : its very inefficient change after internet access
-    def upgrade_leader_board(self, rate_model:Model):
+    def upgrade_leader_board(self, food_model:Model):
         try:
             # shold have used "self.redis_client.zmscore" to decrease redis_connections but my redis_version does not support it 
             # and i dont have internet access to upgrade it
@@ -95,15 +102,24 @@ class LeaderBoardRedisClient(RedisClient):
                 food_item_total_values.append(self.redis_client.zscore(name=self.total_rate_key, value=r[0]))
             items = {}
             for i in range(len(rate_counts)):
-                items[rate_counts[i][0].decode()] = food_item_total_values[i] / rate_counts[i][1]
+                items[rate_counts[i][0]] = food_item_total_values[i] / rate_counts[i][1]
             self.redis_client.zadd(self.rate_set_key, items)
 
         except RedisError:
             #log error
 
-            # shold have used aggregate and annotate on rate_model but currently i dont remember the excact syntax
-            # and dont have access to internet
-            return
+            rates = food_model.objects.annotate(rate_count = Count('food_rates'), rate_total = Sum('food_rates__rate')).values('id', 'rate_count', 'rate_total')
+            rate_totals = {}
+            rate_counts = {}
+            rate_results = {}
+            for rate in rates:
+                if rate['rate_total'] and rate['rate_count']:
+                    rate_totals[str(rate['id'])] = rate['rate_total']
+                    rate_counts[str(rate['id'])] = rate['rate_count']
+                    rate_results[str(rate['id'])] = rate['rate_total'] / rate['rate_count']
+
+            self.bulk_insert_rate(rate_totals, rate_counts)
+            self.redis_client.zadd(self.rate_set_key, rate_results)
 
     def get_leader_board(self) -> dict:
         results = self.redis_client.zrevrangebyscore(name=self.rate_set_key, min=0, max=10, withscores=True)

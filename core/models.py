@@ -201,7 +201,7 @@ class FoodRate(models.Model):
         VERY_GOOD = 5, _('very good')
     
     user = models.ForeignKey(to = settings.AUTH_USER_MODEL, null=True, on_delete= models.SET_NULL)
-    food = models.ForeignKey(to= Food, on_delete= models.CASCADE)
+    food = models.ForeignKey(to= Food, on_delete= models.CASCADE, related_name='food_rates')
     date_rated = models.DateField(verbose_name=_("date rated"), auto_now_add=True)
     rate = models.PositiveSmallIntegerField(verbose_name=_("rate"), choices=rateChoices.choices)
     _redis_manager = LeaderBoardRedisClient()
