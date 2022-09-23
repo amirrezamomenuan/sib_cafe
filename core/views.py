@@ -17,7 +17,7 @@ from core.serializers import (CancelOrderSerializer,
                             OrderItemDetailSerializer,
                             RateSubmittionSerializer,
                             )
-from core.models import FoodItem, FoodRate, OrderItem
+from core.models import Food, FoodItem, FoodRate, OrderItem
 from core.utils import get_object_or_404_rest, LeaderBoardRedisClient
 
 
@@ -132,9 +132,9 @@ class FoodRateView(APIView):
 
 class LeaderBoardView(APIView):
     def get(self, request):
-        data = LeaderBoardRedisClient().get_leader_board()
-        print(data)
-        print(len(data))
+        data = LeaderBoardRedisClient().get_leaderboard()
         if data:
             return Response(data=data, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        else:
+            data = LeaderBoardRedisClient().get_leaderboard_lazy(food_model=Food)
+            return Response(data=data, status=status.HTTP_200_OK)

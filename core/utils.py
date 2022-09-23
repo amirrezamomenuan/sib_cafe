@@ -121,10 +121,19 @@ class LeaderBoardRedisClient(RedisClient):
             self.bulk_insert_rate(rate_totals, rate_counts)
             self.redis_client.zadd(self.rate_set_key, rate_results)
 
-    def get_leader_board(self) -> dict:
+    def get_leaderboard(self) -> dict:
         results = self.redis_client.zrevrangebyscore(name=self.rate_set_key, min=0, max=10, withscores=True)
         dict_result = {}
         for r in results:
             # should have replaced with formating but i dont remember the exact syntax
             dict_result[r[0]] = float(str(r[1]).split('.')[0] + '.' +str(r[1]).split('.')[1][:2])
         return dict_result
+    
+    def get_leaderboard_lazy(self, food_model:Model) -> dict:
+        rates = food_model.objects.annotate(rate_count = Count('food_rates'), rate_total = Sum('food_rates__rate')).values('id', 'rate_count', 'rate_total')
+        rate_results = {}
+        for rate in rates:
+            if rate['rate_total'] and rate['rate_count']:
+                rate_results[str(rate['id'])] = rate['rate_total'] / rate['rate_count']
+        
+        return rate_results
