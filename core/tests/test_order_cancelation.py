@@ -43,11 +43,6 @@ class TestCancelOrder(APITestCase):
             description = 'kabab koobideh 1 sikh',
             category = Food.foodCategories.LUNCH.value,
         )
-        soda_can = Food.objects.create(
-            name = 'soda_can',
-            description = '330 ml canned soda',
-            category = Food.foodCategories.APPETIZER.value,
-        )
         fries = Food.objects.create(
             name = 'fries',
             description = 'sibzamazni sorkh kardeh',
@@ -65,12 +60,12 @@ class TestCancelOrder(APITestCase):
         fries_item = FoodItem.objects.create(id = 3, food=fries, price=10000, weekday=FoodItem.dayChoices.EVERY_DAY.value)
         omelette_item = FoodItem.objects.create(id = 5, food=omelette, amount=15, price=18000, weekday=FoodItem.dayChoices.EVERY_DAY.value)
 
-        o1 = OrderItem.objects.create(id = 1, food_item = kabab_item, user= user, order_date = date(2022, 9, 17), state = OrderItem.stateChoices.PAYED.value)
-        o2 = OrderItem.objects.create(id = 2, food_item = kabab_item, user= user, order_date = date(2022, 9, 17), state = OrderItem.stateChoices.CANCELED.value)
-        o3 = OrderItem.objects.create(id = 3, food_item = kabab_item, user= user, order_date = date(2022, 9, 17), state = OrderItem.stateChoices.SERVED.value)
-        o4 = OrderItem.objects.create(id = 4, food_item = kabab_item, user= user2, order_date = date(2022, 9, 17), state = OrderItem.stateChoices.SUBMITED.value)
-        o5 = OrderItem.objects.create(id = 5, food_item = omelette_item, user= user2, order_date = date(2022, 9, 17), state = OrderItem.stateChoices.SUBMITED.value)
-        o6 = OrderItem.objects.create(id = 6, food_item = fries_item, user= user, order_date = date(2022, 9, 25), state = OrderItem.stateChoices.SUBMITED.value)
+        OrderItem.objects.create(id = 1, food_item = kabab_item, user= user, order_date = date(2022, 9, 17), state = OrderItem.stateChoices.PAYED.value)
+        OrderItem.objects.create(id = 2, food_item = kabab_item, user= user, order_date = date(2022, 9, 17), state = OrderItem.stateChoices.CANCELED.value)
+        OrderItem.objects.create(id = 3, food_item = kabab_item, user= user, order_date = date(2022, 9, 17), state = OrderItem.stateChoices.SERVED.value)
+        OrderItem.objects.create(id = 4, food_item = kabab_item, user= user2, order_date = date(2022, 9, 17), state = OrderItem.stateChoices.SUBMITED.value)
+        OrderItem.objects.create(id = 5, food_item = omelette_item, user= user2, order_date = date(2022, 9, 17), state = OrderItem.stateChoices.SUBMITED.value)
+        OrderItem.objects.create(id = 6, food_item = fries_item, user= user, order_date = date(2022, 9, 25), state = OrderItem.stateChoices.SUBMITED.value)
 
     
     def test_canceling_without_authentication(self):

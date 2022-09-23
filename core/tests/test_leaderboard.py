@@ -40,6 +40,7 @@ class TestLeaderBoard(APITestCase):
         FoodRate(user=user, food=omelette, rate=1).save()
         FoodRate(user=user, food=omelette, rate=5).save()
         FoodRate(user=user, food=omelette, rate=5).save()
+        
         self.leaderboard.upgrade_leader_board(food_model=Food)
     
     def test_post_method(self):
